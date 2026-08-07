@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box;}
+    html,body{margin:0;padding:0;}
+    body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;}
+    input,button,textarea,select{font-family:inherit;}
+    ::selection{background:rgba(99,102,241,.22);}
+    *::-webkit-scrollbar{width:10px;height:10px;}
+    *::-webkit-scrollbar-thumb{background:rgba(130,140,170,.3);border-radius:10px;}
+    *::-webkit-scrollbar-thumb:hover{background:rgba(130,140,170,.5);}
+    *::-webkit-scrollbar-track{background:transparent;}
+    @keyframes qfFade{from{opacity:0}to{opacity:1}}
+    @keyframes qfPop{from{opacity:0;transform:translateY(14px) scale(.97)}to{opacity:1;transform:none}}
+    @keyframes qfPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
+    @keyframes qfRise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  </style>
+</helmet>
+<div style="{{ themeVars }}">
+
+  <aside style="{{ sidebarStyle }}">
+    <div style="display:flex;align-items:center;gap:10px;padding:18px 16px 14px;height:64px;">
+      <div style="flex:none;width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--primary,#6366f1),var(--primary-strong,#4f46e5));display:flex;align-items:center;justify-content:center;color:#fff;box-shadow:0 6px 16px var(--primary-soft,#eef1ff);">{{ iconLogo }}</div>
+      <sc-if value="{{ showLabels }}" hint-placeholder-val="{{ true }}">
+        <span style="font-size:18px;font-weight:800;letter-spacing:-.02em;color:var(--text,#171a23);flex:1;">QuizFlow</span>
+      </sc-if>
+      <button onClick="{{ onToggleCollapse }}" style="flex:none;width:30px;height:30px;border-radius:8px;border:none;background:transparent;color:var(--text3,#959bb0);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .15s;" style-hover="{{ ghostHover }}">
+        <sc-if value="{{ collapsed }}" hint-placeholder-val="{{ false }}">{{ iconExpand }}</sc-if>
+        <sc-if value="{{ showLabels }}" hint-placeholder-val="{{ true }}">{{ iconCollapse }}</sc-if>
+      </button>
+    </div>
+
+    <sc-if value="{{ showLabels }}" hint-placeholder-val="{{ true }}">
+      <div style="padding:4px 14px 10px;">
+        <div style="display:flex;align-items:center;gap:9px;padding:9px 12px;background:var(--surface2,#f1f3f9);border-radius:11px;border:1px solid transparent;transition:border-color .15s;" style-focus-within="{{ searchFocus }}">
+          <span style="color:var(--text3,#959bb0);display:flex;">{{ iconSearch }}</span>
+          <input value="{{ search }}" onChange="{{ onSearch }}" placeholder="Search subjects" style="border:none;background:transparent;outline:none;flex:1;min-width:0;font-size:13.5px;color:var(--text,#171a23);"/>
+        </div>
+      </div>
+    </sc-if>
+
+    <div style="flex:1;overflow-y:auto;overflow-x:hidden;padding:4px 0 8px;">
+      <div style="margin:0 8px 6px;">
+        <div onClick="{{ onGoHome }}" style="{{ homeNavStyle }}" style-hover="{{ homeNavHover }}">
+          <span style="flex:none;width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;background:var(--surface2,#f1f3f9);color:var(--text2,#5b6178);">{{ iconHome }}</span>
+          <sc-if value="{{ showLabels }}" hint-placeholder-val="{{ true }}">
+            <span style="flex:1;font-size:14px;font-weight:600;">Home</span>
+          </sc-if>
+        </div>
+      </div>
+      <sc-if value="{{ showLabels }}" hint-placeholder-val="{{ true }}">
+        <div style="padding:8px 22px 6px;font-size:11px;font-weight:700;letter-spacing:.09em;color:var(--text3,#959bb0);text-transform:uppercase;">Subjects</div>
+      </sc-if>
+      <sc-for list="{{ subjects }}" as="s" hint-placeholder-count="4">
+        <div draggable="true" onDragStart="{{ s.onDragStart }}" onDragOver="{{ s.onDragOver }}" onDrop="{{ s.onDrop }}" style="margin:0 8px 2px;">
+          <div onClick="{{ s.onSelect }}" style="{{ s.itemStyle }}" style-hover="{{ s.itemHover }}" title="{{ s.name }}">
+            <span style="{{ s.chipStyle }}">{{ s.iconEl }}</span>
+            <sc-if value="{{ showLabels }}" hint-placeholder-val="{{ true }}">
+              <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px;font-weight:600;">{{ s.name }}</span>
+              <span style="{{ s.countStyle }}">{{ s.cardCount }}</span>
+              <button onClick="{{ s.onEdit }}" style="{{ s.editBtnStyle }}" style-hover="{{ ghostHover }}">{{ iconPencil }}</button>
+            </sc-if>
+          </div>
+          <sc-if value="{{ s.editing }}" hint-placeholder-val="{{ false }}">
+            <div style="margin:6px 4px 10px;padding:14px;background:var(--surface2,#f1f3f9);border:1px solid var(--border,#e9ebf2);border-radius:13px;animation:qfRise .2s ease;">
+              <input value="{{ s.name }}" onChange="{{ s.onName }}" style="width:100%;border:1px solid var(--border-s,#dde1ec);background:var(--surface,#fff);border-radius:9px;padding:8px 10px;font-size:13.5px;font-weight:600;color:var(--text,#171a23);outline:none;margin-bottom:11px;"/>
+              <div style="font-size:10.5px;font-weight:700;letter-spacing:.06em;color:var(--text3,#959bb0);text-transform:uppercase;margin-bottom:7px;">Color</div>
+              <div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:12px;">
+                <sc-for list="{{ s.colorSwatches }}" as="sw" hint-placeholder-count="6">
+                  <button onClick="{{ sw.onPick }}" style="{{ sw.style }}"></button>
+                </sc-for>
+              </div>
+              <div style="font-size:10.5px;font-weight:700;letter-spacing:.06em;color:var(--text3,#959bb0);text-transform:uppercase;margin-bottom:7px;">Icon</div>
+              <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:12px;">
+                <sc-for list="{{ s.iconChoices }}" as="ic" hint-placeholder-count="8">
+                  <button onClick="{{ ic.onPick }}" style="{{ ic.style }}">{{ ic.el }}</button>
+                </sc-for>
+              </div>
+              <button onClick="{{ s.onDelete }}" style="display:flex;align-items:center;gap:7px;width:100%;justify-content:center;padding:8px;border-radius:9px;border:1px solid var(--crimson-border,#f8c1cb);background:transparent;color:var(--crimson,#f43f5e);font-size:12.5px;font-weight:600;cursor:pointer;transition:background .15s;" style-hover="{{ deleteHover }}">{{ iconTrash }} Delete subject</button>
+            </div>
+          </sc-if>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="padding:12px;border-top:1px solid var(--border,#e9ebf2);">
+      <button onClick="{{ onCreateSubject }}" style="{{ createBtnStyle }}" style-hover="{{ createBtnHover }}">
+        {{ iconPlus }}
+        <sc-if value="{{ showLabels }}" hint-placeholder-val="{{ true }}"><span>New Subject</span></sc-if>
+      </button>
+    </div>
+  </aside>
+
+  <main style="flex:1;min-width:0;display:flex;flex-direction:column;background:var(--bg,#f5f6fa);">
+    <header style="height:64px;flex:none;display:flex;align-items:center;gap:16px;padding:0 28px;border-bottom:1px solid var(--border,#e9ebf2);background:var(--surface,#fff);">
+      <div style="display:flex;align-items:center;gap:7px;flex:1;min-width:0;">
+        <sc-for list="{{ crumbs }}" as="cr" hint-placeholder-count="2">
+          <sc-if value="{{ cr.notFirst }}" hint-placeholder-val="{{ false }}"><span style="color:var(--text3,#959bb0);display:flex;">{{ iconChevR }}</span></sc-if>
+          <button onClick="{{ cr.onClick }}" style="{{ cr.style }}" style-hover="{{ cr.hover }}">{{ cr.label }}</button>
+        </sc-for>
+      </div>
+      <div style="display:flex;align-items:center;gap:9px;">
+        <div style="display:flex;align-items:center;gap:7px;padding:7px 13px;border-radius:999px;background:var(--amber-soft,#fff6e6);color:var(--amber,#f59e0b);font-weight:700;font-size:13px;">{{ iconFlame }} 7</div>
+        <div style="display:flex;align-items:center;gap:8px;padding:7px 14px;border-radius:999px;background:var(--primary-soft,#eef1ff);color:var(--primary-strong,#4f46e5);font-weight:700;font-size:13px;">{{ iconSparkle }} Lvl 5 · 1,240 XP</div>
+        <button onClick="{{ onToggleTheme }}" style="width:38px;height:38px;border-radius:11px;border:1px solid var(--border,#e9ebf2);background:var(--surface,#fff);color:var(--text2,#5b6178);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;" style-hover="{{ ghostHover }}">
+          <sc-if value="{{ dark }}" hint-placeholder-val="{{ false }}">{{ iconSun }}</sc-if>
+          <sc-if value="{{ light }}" hint-placeholder-val="{{ true }}">{{ iconMoon }}</sc-if>
+        </button>
+        <div style="width:38px;height:38px;border-radius:999px;background:linear-gradient(135deg,#6366f1,#a855f7);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13.5px;flex:none;">JS</div>
+      </div>
+    </header>
+
+    <div ref="{{ mainRef }}" style="flex:1;overflow-y:auto;">
+
+      <sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
+        <div style="max-width:960px;margin:0 auto;padding:34px 40px 72px;width:100%;animation:qfRise .3s ease;">
+
+          <div style="border-radius:22px;background:linear-gradient(135deg,var(--primary,#6366f1),var(--primary-strong,#4f46e5));padding:26px 32px;margin-bottom:28px;color:#fff;display:flex;align-items:flex-start;justify-content:space-between;gap:22px;box-shadow:0 16px 44px var(--primary-soft,#eef1ff);position:relative;overflow:hidden;">
+            <div style="position:absolute;right:-22px;top:-32px;width:190px;height:190px;border-radius:999px;background:rgba(255,255,255,.07);pointer-events:none;"></div>
+            <div style="position:absolute;right:72px;bottom:-46px;width:130px;height:130px;border-radius:999px;background:rgba(255,255,255,.05);pointer-events:none;"></div>
+            <div style="flex:1;min-width:0;position:relative;">
+              <div style="font-size:12px;font-weight:600;color:rgba(255,255,255,.65);margin-bottom:9px;letter-spacing:.04em;">{{ todayDate }}</div>
+              <h1 style="margin:0 0 7px;font-size:27px;font-weight:800;letter-spacing:-.02em;line-height:1.2;color:#fff;">Welcome back, Learner! ✨</h1>
+              <p style="margin:0;font-size:14px;color:rgba(255,255,255,.78);font-weight:500;">Ready to crush today's goals?</p>
+            </div>
+            <div style="flex:none;background:rgba(255,255,255,.14);border-radius:16px;padding:17px 20px;min-width:218px;position:relative;">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+                <span style="font-size:10.5px;font-weight:700;color:rgba(255,255,255,.7);letter-spacing:.06em;text-transform:uppercase;">Today's goal</span>
+                <span style="font-size:12.5px;font-weight:700;color:rgba(255,255,255,.9);">{{ todayCards }}/{{ goalCards }} cards</span>
+              </div>
+              <div style="height:7px;border-radius:999px;background:rgba(255,255,255,.22);overflow:hidden;margin-bottom:10px;">
+                <div style="{{ todayBarStyle }}"></div>
+              </div>
+              <div style="font-size:12px;color:rgba(255,255,255,.72);font-weight:500;">{{ todayRemaining }} min left · keep your 7-day streak</div>
+            </div>
+          </div>
+
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+            <h2 style="margin:0;font-size:17px;font-weight:700;color:var(--text,#171a23);">Continue studying</h2>
+            <button onClick="{{ goDashboard }}" style="font-size:13px;font-weight:600;color:var(--primary,#6366f1);background:none;border:none;cursor:pointer;padding:5px 9px;border-radius:8px;transition:background .15s;" style-hover="{{ ghostHover }}">See all</button>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:14px;margin-bottom:28px;">
+            <sc-for list="{{ recentChaps }}" as="rc" hint-placeholder-count="3">
+              <div style="background:var(--surface,#fff);border:1px solid var(--border,#e9ebf2);border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:12px;box-shadow:var(--shadow,0 1px 2px rgba(20,30,60,.06));transition:transform .18s,box-shadow .2s;" style-hover="{{ chapterHover }}">
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+                  <span style="{{ rc.subjectBadge }}">{{ rc.subjectIconEl }} {{ rc.subjectName }}</span>
+                  <span style="{{ rc.pctBadge }}">{{ rc.pct }}%</span>
+                </div>
+                <div style="font-size:15px;font-weight:700;color:var(--text,#171a23);line-height:1.3;min-height:38px;">{{ rc.chapterName }}</div>
+                <div style="font-size:12.5px;color:var(--text2,#5b6178);font-weight:500;">{{ rc.masteredCount }}/{{ rc.cardCount }} cards mastered</div>
+                <div style="height:6px;border-radius:999px;background:var(--surface3,#e9ecf4);overflow:hidden;">
+                  <div style="{{ rc.barStyle }}"></div>
+                </div>
+                <button onClick="{{ rc.onResume }}" style="{{ resumeBtnStyle }}" style-hover="{{ resumeBtnHover }}">{{ iconPlay }} Resume</button>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="border-radius:20px;background:linear-gradient(135deg,#0f1320,#1e1b4b);padding:24px 28px;margin-bottom:28px;display:flex;align-items:center;gap:20px;position:relative;overflow:hidden;box-shadow:0 12px 40px rgba(99,102,241,.25);">
+            <div style="position:absolute;right:-14px;top:-28px;width:160px;height:160px;border-radius:999px;background:rgba(99,102,241,.12);pointer-events:none;"></div>
+            <div style="position:absolute;left:0;bottom:0;width:100%;height:100%;background:linear-gradient(90deg,rgba(99,102,241,.08),transparent);pointer-events:none;"></div>
+            <div style="flex:none;width:56px;height:56px;border-radius:16px;background:rgba(99,102,241,.22);display:flex;align-items:center;justify-content:center;color:#a5b4fc;border:1px solid rgba(99,102,241,.3);position:relative;">{{ iconZapLg }}</div>
+            <div style="flex:1;min-width:0;position:relative;">
+              <div style="display:inline-flex;align-items:center;padding:3px 10px;border-radius:999px;background:rgba(99,102,241,.22);color:#818cf8;font-size:10.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;margin-bottom:8px;">Smart Review AI</div>
+              <div style="font-size:20px;font-weight:800;color:#fff;letter-spacing:-.01em;margin-bottom:4px;">{{ reviewCount }} cards ready for review</div>
+              <div style="font-size:13px;color:rgba(255,255,255,.52);font-weight:500;">Across all subjects · spaced-repetition optimised</div>
+            </div>
+            <button onClick="{{ onStartReview }}" style="{{ reviewBtnStyle }}" style-hover="{{ reviewBtnHover }}">{{ iconZap }} Start 5-min review</button>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 296px;gap:16px;align-items:flex-start;">
+            <div style="background:var(--surface,#fff);border:1px solid var(--border,#e9ebf2);border-radius:18px;padding:22px 24px;box-shadow:var(--shadow,0 1px 2px rgba(20,30,60,.06));">
+              <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px;">
+                <div>
+                  <h3 style="margin:0 0 3px;font-size:15.5px;font-weight:700;color:var(--text,#171a23);">Weekly activity</h3>
+                  <p style="margin:0;font-size:12.5px;color:var(--text2,#5b6178);font-weight:500;">{{ weekTotal }} cards reviewed this week</p>
+                </div>
+                <span style="font-size:11.5px;font-weight:700;padding:4px 12px;border-radius:999px;background:var(--primary-soft,#eef1ff);color:var(--primary-strong,#4f46e5);">This week</span>
+              </div>
+              <div style="display:flex;align-items:flex-end;gap:8px;height:92px;">
+                <sc-for list="{{ weekDays }}" as="wd" hint-placeholder-count="7">
+                  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:7px;height:100%;">
+                    <div style="{{ wd.colStyle }}"></div>
+                    <span style="{{ wd.labelStyle }}">{{ wd.day }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:10px;">
+              <h3 style="margin:0 0 4px;font-size:15.5px;font-weight:700;color:var(--text,#171a23);">Quick actions</h3>
+              <button onClick="{{ onQuickImport }}" style="{{ qaBtnStyle }}" style-hover="{{ qaBtnHover }}">
+                <div style="{{ qaIconWrap }}">{{ iconUpload }}</div>
+                <div style="flex:1;text-align:left;">
+                  <div style="font-size:14px;font-weight:700;color:var(--text,#171a23);margin-bottom:2px;">Quick Import</div>
+                  <div style="font-size:12px;color:var(--text2,#5b6178);font-weight:500;">Import text to generate quiz</div>
+                </div>
+                <span style="color:var(--text3,#959bb0);display:flex;">{{ iconChevR }}</span>
+              </button>
+              <button onClick="{{ onExplore }}" style="{{ qaBtnStyle }}" style-hover="{{ qaBtnHover }}">
+                <div style="{{ qaIconWrapGreen }}">{{ iconCompass }}</div>
+                <div style="flex:1;text-align:left;">
+                  <div style="font-size:14px;font-weight:700;color:var(--text,#171a23);margin-bottom:2px;">Explore Public Sets</div>
+                  <div style="font-size:12px;color:var(--text2,#5b6178);font-weight:500;">Browse trending quiz sets</div>
+                </div>
+                <span style="color:var(--text3,#959bb0);display:flex;">{{ iconChevR }}</span>
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isDashboard }}" hint-placeholder-val="{{ false }}">
+        <div style="max-width:1000px;margin:0 auto;padding:34px 40px 72px;width:100%;">
+          <div style="display:flex;gap:18px;align-items:center;margin-bottom:26px;">
+            <div style="{{ heroChipStyle }}">{{ heroIconEl }}</div>
+            <div style="flex:1;min-width:0;">
+              <h1 style="margin:0;font-size:30px;font-weight:800;letter-spacing:-.02em;color:var(--text,#171a23);">{{ subjectName }}</h1>
+              <p style="margin:5px 0 0;font-size:14.5px;color:var(--text2,#5b6178);font-weight:500;">{{ subjectMeta }}</p>
+            </div>
+          </div>
+
+          <div style="background:var(--surface,#fff);border:1px solid var(--border,#e9ebf2);border-radius:18px;padding:20px 22px;margin-bottom:30px;box-shadow:var(--shadow,0 1px 2px rgba(20,30,60,.06));">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+              <span style="font-size:13.5px;font-weight:700;color:var(--text2,#5b6178);">Overall mastery</span>
+              <span style="font-size:18px;font-weight:800;color:var(--primary,#6366f1);">{{ overallPct }}%</span>
+            </div>
+            <div style="height:10px;border-radius:999px;background:var(--surface3,#e9ecf4);overflow:hidden;">
+              <div style="{{ overallBarStyle }}"></div>
+            </div>
+          </div>
+
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+            <h2 style="margin:0;font-size:18px;font-weight:700;color:var(--text,#171a23);">Chapters</h2>
+          </div>
+
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:16px;">
+            <sc-for list="{{ chapters }}" as="ch" hint-placeholder-count="3">
+              <div style="background:var(--surface,#fff);border:1px solid var(--border,#e9ebf2);border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:14px;box-shadow:var(--shadow,0 1px 2px rgba(20,30,60,.06));transition:transform .18s, box-shadow .2s;" style-hover="{{ chapterHover }}">
+                <div style="display:flex;align-items:flex-start;gap:10px;">
+                  <input value="{{ ch.name }}" onChange="{{ ch.onName }}" style="flex:1;min-width:0;border:1px solid transparent;background:transparent;border-radius:8px;padding:4px 6px;margin:-4px -6px;font-size:16px;font-weight:700;color:var(--text,#171a23);outline:none;transition:all .15s;" style-focus="{{ titleFocus }}"/>
+                  <span style="{{ ch.pctBadgeStyle }}">{{ ch.pct }}%</span>
+                </div>
+                <div style="font-size:13px;color:var(--text2,#5b6178);font-weight:500;display:flex;align-items:center;gap:6px;">{{ iconLayers }} {{ ch.cardCount }} cards · {{ ch.masteredCount }} mastered</div>
+                <div style="height:7px;border-radius:999px;background:var(--surface3,#e9ecf4);overflow:hidden;">
+                  <div style="{{ ch.barStyle }}"></div>
+                </div>
+                <div style="display:flex;gap:8px;margin-top:2px;">
+                  <button onClick="{{ ch.onStudy }}" style="{{ studyBtnStyle }}" style-hover="{{ studyBtnHover }}">{{ iconPlay }} Study</button>
+                  <button onClick="{{ ch.onAddCard }}" style="flex:none;display:flex;align-items:center;gap:6px;padding:9px 13px;border-radius:10px;border:1px solid var(--border-s,#dde1ec);background:transparent;color:var(--text2,#5b6178);font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;" style-hover="{{ ghostHover }}">{{ iconPlus }}</button>
+                </div>
+              </div>
+            </sc-for>
+            <button onClick="{{ onAddChapter }}" style="min-height:160px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;border:2px dashed var(--border-s,#dde1ec);border-radius:16px;background:transparent;color:var(--text3,#959bb0);font-size:14px;font-weight:600;cursor:pointer;transition:all .18s;" style-hover="{{ dashedHover }}">
+              <span style="display:flex;width:38px;height:38px;align-items:center;justify-content:center;border-radius:11px;background:var(--surface2,#f1f3f9);">{{ iconPlus }}</span>
+              New Chapter
+            </button>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isStudy }}" hint-placeholder-val="{{ false }}">
+        <div style="max-width:740px;margin:0 auto;padding:30px 32px 72px;width:100%;position:relative;">
+
+          <sc-if value="{{ hasCards }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+              <span style="font-size:14px;font-weight:700;color:var(--text,#171a23);">Question {{ cardNum }} of {{ cardTotal }}</span>
+              <span style="font-size:13px;font-weight:600;color:var(--emerald,#10b981);">{{ scoreLabel }}</span>
+            </div>
+            <div style="height:8px;border-radius:999px;background:var(--surface3,#e9ecf4);overflow:hidden;margin-bottom:26px;">
+              <div style="{{ studyBarStyle }}"></div>
+            </div>
+
+            <div style="perspective:1800px;">
+              <div style="{{ flipStyle }}">
+                <div style="{{ frontStyle }}">
+                  <div ref="{{ cardRef }}">
+                    <div style="display:inline-flex;align-items:center;gap:6px;padding:5px 11px;border-radius:999px;background:var(--primary-soft,#eef1ff);color:var(--primary-strong,#4f46e5);font-size:11.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;margin-bottom:18px;">{{ iconLayers }} Multiple choice</div>
+                    <div style="font-size:22px;line-height:1.4;font-weight:700;letter-spacing:-.01em;color:var(--text,#171a23);text-wrap:pretty;">{{ cardQuestion }}</div>
+                    <sc-if value="{{ hasCode }}" hint-placeholder-val="{{ false }}">
+                      <pre style="margin:16px 0 0;padding:14px 16px;background:var(--code-bg,#0f1320);border-radius:12px;font-family:'JetBrains Mono',monospace;font-size:13.5px;line-height:1.6;color:#e7ecff;overflow-x:auto;">{{ cardCode }}</pre>
+                    </sc-if>
+                    <div style="display:flex;flex-direction:column;gap:11px;margin-top:24px;">
+                      <sc-for list="{{ options }}" as="o" hint-placeholder-count="4">
+                        <button onClick="{{ o.onClick }}" ref="{{ o.ref }}" style="{{ o.style }}" style-hover="{{ o.hover }}">
+                          <span style="{{ o.letterStyle }}">{{ o.letter }}</span>
+                          <span style="flex:1;">{{ o.text }}</span>
+                          <sc-if value="{{ o.showIcon }}" hint-placeholder-val="{{ false }}"><span style="{{ o.iconStyle }}">{{ o.iconEl }}</span></sc-if>
+                        </button>
+                      </sc-for>
+                    </div>
+                  </div>
+                </div>
+                <div style="{{ backStyle }}">
+                  <div style="display:inline-flex;align-items:center;gap:6px;padding:5px 11px;border-radius:999px;background:var(--amber-soft,#fff6e6);color:var(--amber,#f59e0b);font-size:11.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;margin-bottom:18px;">{{ iconSparkle }} Explanation</div>
+                  <div style="display:flex;align-items:flex-start;gap:11px;padding:13px 15px;border-radius:13px;background:var(--emerald-soft,#e8f8f1);border:1px solid var(--emerald-border,#a7e8cf);margin-bottom:18px;">
+                    <span style="flex:none;width:26px;height:26px;border-radius:8px;background:var(--emerald,#10b981);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;">{{ correctLetter }}</span>
+                    <span style="font-size:15px;font-weight:600;color:var(--text,#171a23);padding-top:3px;">{{ correctText }}</span>
+                  </div>
+                  <div style="font-size:16px;line-height:1.6;color:var(--text2,#5b6178);font-weight:500;text-wrap:pretty;">{{ cardExplanation }}</div>
+                </div>
+              </div>
+            </div>
+
+            <div style="display:flex;align-items:center;gap:10px;margin-top:26px;">
+              <button onClick="{{ onPrev }}" style="{{ prevStyle }}" style-hover="{{ navHover }}">{{ iconArrowL }} Previous</button>
+              <button onClick="{{ onFlip }}" style="display:flex;align-items:center;gap:8px;padding:12px 18px;border-radius:12px;border:1px solid var(--border-s,#dde1ec);background:var(--surface,#fff);color:var(--text,#171a23);font-size:14px;font-weight:600;cursor:pointer;transition:all .15s;" style-hover="{{ ghostHover }}">{{ iconRotate }} {{ flipLabel }}</button>
+              <button onClick="{{ onSkip }}" style="display:flex;align-items:center;gap:8px;padding:12px 16px;border-radius:12px;border:none;background:transparent;color:var(--text2,#5b6178);font-size:14px;font-weight:600;cursor:pointer;margin-left:auto;transition:all .15s;" style-hover="{{ ghostHover }}">Skip</button>
+              <button onClick="{{ onNext }}" style="{{ nextStyle }}" style-hover="{{ nextHover }}">{{ nextLabel }} {{ nextIconEl }}</button>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ isEmptyChapter }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;flex-direction:column;align-items:center;text-align:center;padding:90px 24px;">
+              <div style="width:64px;height:64px;border-radius:18px;background:var(--surface2,#f1f3f9);color:var(--text3,#959bb0);display:flex;align-items:center;justify-content:center;margin-bottom:18px;">{{ iconLayersLg }}</div>
+              <h3 style="margin:0 0 6px;font-size:20px;font-weight:700;color:var(--text,#171a23);">No cards in this chapter yet</h3>
+              <p style="margin:0 0 22px;font-size:14.5px;color:var(--text2,#5b6178);">Create your first multiple-choice card to start studying.</p>
+              <button onClick="{{ onAddCardHere }}" style="{{ nextStyle }}" style-hover="{{ nextHover }}">{{ iconPlus }} Add your first card</button>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ studyComplete }}" hint-placeholder-val="{{ false }}">
+            <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;text-align:center;padding-top:60px;background:var(--bg,#f5f6fa);animation:qfFade .25s ease;">
+              <div style="width:84px;height:84px;border-radius:24px;background:linear-gradient(135deg,var(--amber,#f59e0b),#fb923c);color:#fff;display:flex;align-items:center;justify-content:center;margin-bottom:22px;box-shadow:0 14px 40px rgba(245,158,11,.35);animation:qfPulse 2.4s ease-in-out infinite;">{{ iconTrophyLg }}</div>
+              <h2 style="margin:0 0 8px;font-size:28px;font-weight:800;letter-spacing:-.02em;color:var(--text,#171a23);">Chapter complete!</h2>
+              <p style="margin:0 0 28px;font-size:16px;color:var(--text2,#5b6178);font-weight:500;">You answered <strong style="color:var(--emerald,#10b981);">{{ finalScore }}</strong> of {{ cardTotal }} correctly.</p>
+              <div style="display:flex;gap:11px;">
+                <button onClick="{{ onRestart }}" style="display:flex;align-items:center;gap:8px;padding:13px 20px;border-radius:12px;border:1px solid var(--border-s,#dde1ec);background:var(--surface,#fff);color:var(--text,#171a23);font-size:14.5px;font-weight:600;cursor:pointer;transition:all .15s;" style-hover="{{ ghostHover }}">{{ iconRotate }} Review again</button>
+                <button onClick="{{ onBackToChapters }}" style="{{ nextStyle }}" style-hover="{{ nextHover }}">Back to chapters {{ iconArrowR }}</button>
+              </div>
+            </div>
+          </sc-if>
+
+        </div>
+      </sc-if>
+
+    </div>
+  </main>
+
+  <sc-if value="{{ modalOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ onCloseModal }}" style="position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;padding:24px;background:rgba(15,18,30,.5);backdrop-filter:blur(4px);animation:qfFade .2s ease;">
+      <div onClick="{{ stopProp }}" style="width:100%;max-width:880px;max-height:90vh;display:flex;flex-direction:column;background:var(--surface,#fff);border:1px solid var(--border,#e9ebf2);border-radius:20px;box-shadow:var(--shadow-l,0 16px 50px rgba(30,40,80,.14));overflow:hidden;animation:qfPop .3s cubic-bezier(.2,.8,.2,1);">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;padding:22px 26px;border-bottom:1px solid var(--border,#e9ebf2);">
+          <div>
+            <h2 style="margin:0;font-size:20px;font-weight:800;letter-spacing:-.01em;color:var(--text,#171a23);">Add a flashcard</h2>
+            <p style="margin:4px 0 0;font-size:13.5px;color:var(--text2,#5b6178);font-weight:500;">Adding to <strong style="color:var(--text,#171a23);">{{ modalChapterName }}</strong></p>
+          </div>
+          <button onClick="{{ onCloseModal }}" style="width:34px;height:34px;border-radius:10px;border:none;background:var(--surface2,#f1f3f9);color:var(--text2,#5b6178);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;" style-hover="{{ ghostHover }}">{{ iconClose }}</button>
+        </div>
+
+        <div style="flex:1;overflow-y:auto;display:grid;grid-template-columns:1fr 1fr;gap:0;">
+          <div style="padding:24px 26px;border-right:1px solid var(--border,#e9ebf2);display:flex;flex-direction:column;gap:18px;">
+            <div>
+              <label style="display:block;font-size:12.5px;font-weight:700;color:var(--text2,#5b6178);margin-bottom:7px;">Question</label>
+              <textarea value="{{ form.q }}" onChange="{{ onQ }}" placeholder="What does data mining primarily aim to discover?" style="width:100%;min-height:70px;resize:vertical;border:1px solid var(--border-s,#dde1ec);background:var(--surface,#fff);border-radius:11px;padding:11px 13px;font-size:14.5px;line-height:1.5;color:var(--text,#171a23);outline:none;transition:border-color .15s;" style-focus="{{ inputFocus }}"></textarea>
+            </div>
+            <div>
+              <label style="display:block;font-size:12.5px;font-weight:700;color:var(--text2,#5b6178);margin-bottom:7px;">Answer options · select the correct one</label>
+              <div style="display:flex;flex-direction:column;gap:9px;">
+                <sc-for list="{{ formOptions }}" as="fo" hint-placeholder-count="4">
+                  <div style="display:flex;align-items:center;gap:10px;">
+                    <button onClick="{{ fo.onPick }}" style="{{ fo.radioStyle }}">{{ fo.radioInner }}</button>
+                    <input value="{{ fo.value }}" onChange="{{ fo.onChange }}" placeholder="{{ fo.placeholder }}" style="{{ fo.inputStyle }}" style-focus="{{ inputFocus }}"/>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+            <div>
+              <label style="display:block;font-size:12.5px;font-weight:700;color:var(--text2,#5b6178);margin-bottom:7px;">Code snippet <span style="font-weight:500;color:var(--text3,#959bb0);">(optional)</span></label>
+              <textarea value="{{ form.code }}" onChange="{{ onCode }}" placeholder="df.groupby('category')['sales'].mean()" style="width:100%;min-height:48px;resize:vertical;border:1px solid var(--border-s,#dde1ec);background:var(--surface,#fff);border-radius:11px;padding:11px 13px;font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.5;color:var(--text,#171a23);outline:none;transition:border-color .15s;" style-focus="{{ inputFocus }}"></textarea>
+            </div>
+            <div>
+              <label style="display:block;font-size:12.5px;font-weight:700;color:var(--text2,#5b6178);margin-bottom:7px;">Explanation <span style="font-weight:500;color:var(--text3,#959bb0);">(optional)</span></label>
+              <textarea value="{{ form.explanation }}" onChange="{{ onExp }}" placeholder="Shown when the learner flips the card." style="width:100%;min-height:56px;resize:vertical;border:1px solid var(--border-s,#dde1ec);background:var(--surface,#fff);border-radius:11px;padding:11px 13px;font-size:14px;line-height:1.5;color:var(--text,#171a23);outline:none;transition:border-color .15s;" style-focus="{{ inputFocus }}"></textarea>
+            </div>
+          </div>
+
+          <div style="padding:24px 26px;background:var(--bg,#f5f6fa);display:flex;flex-direction:column;">
+            <div style="font-size:11.5px;font-weight:700;letter-spacing:.06em;color:var(--text3,#959bb0);text-transform:uppercase;margin-bottom:14px;">Live preview</div>
+            <div style="background:var(--surface,#fff);border:1px solid var(--border,#e9ebf2);border-radius:16px;padding:20px;box-shadow:var(--shadow,0 1px 2px rgba(20,30,60,.06));">
+              <div style="font-size:17px;line-height:1.4;font-weight:700;color:var(--text,#171a23);min-height:24px;text-wrap:pretty;">{{ previewQuestion }}</div>
+              <sc-if value="{{ previewHasCode }}" hint-placeholder-val="{{ false }}">
+                <pre style="margin:13px 0 0;padding:11px 13px;background:var(--code-bg,#0f1320);border-radius:10px;font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.55;color:#e7ecff;overflow-x:auto;">{{ form.code }}</pre>
+              </sc-if>
+              <div style="display:flex;flex-direction:column;gap:8px;margin-top:18px;">
+                <sc-for list="{{ previewOptions }}" as="po" hint-placeholder-count="4">
+                  <div style="{{ po.style }}">
+                    <span style="{{ po.letterStyle }}">{{ po.letter }}</span>
+                    <span style="flex:1;">{{ po.text }}</span>
+                    <sc-if value="{{ po.correct }}" hint-placeholder-val="{{ false }}"><span style="color:var(--emerald,#10b981);display:flex;">{{ iconCheckSm }}</span></sc-if>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex;align-items:center;justify-content:flex-end;gap:11px;padding:18px 26px;border-top:1px solid var(--border,#e9ebf2);">
+          <button onClick="{{ onCloseModal }}" style="padding:12px 18px;border-radius:11px;border:1px solid var(--border-s,#dde1ec);background:transparent;color:var(--text,#171a23);font-size:14px;font-weight:600;cursor:pointer;transition:all .15s;" style-hover="{{ ghostHover }}">Cancel</button>
+          <button onClick="{{ onSaveCard }}" style="{{ saveBtnStyle }}" style-hover="{{ saveBtnHover }}">{{ iconCheck }} Save card</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{
+  &quot;$preview&quot;: { &quot;width&quot;: &quot;100%&quot;, &quot;height&quot;: &quot;100%&quot; },
+  &quot;accent&quot;: { &quot;editor&quot;: &quot;enum&quot;, &quot;options&quot;: [&quot;Indigo&quot;,&quot;Violet&quot;,&quot;Blue&quot;,&quot;Teal&quot;], &quot;default&quot;: &quot;Indigo&quot;, &quot;tsType&quot;: &quot;string&quot; },
+  &quot;defaultTheme&quot;: { &quot;editor&quot;: &quot;enum&quot;, &quot;options&quot;: [&quot;light&quot;,&quot;dark&quot;], &quot;default&quot;: &quot;light&quot;, &quot;tsType&quot;: &quot;string&quot; },
+  &quot;font&quot;: { &quot;editor&quot;: &quot;enum&quot;, &quot;options&quot;: [&quot;Plus Jakarta Sans&quot;,&quot;Inter&quot;], &quot;default&quot;: &quot;Plus Jakarta Sans&quot;, &quot;tsType&quot;: &quot;string&quot; }
+}">
+class Component extends DCLogic {
+  palette = ['#6366f1','#10b981','#8b5cf6','#f59e0b','#ef4444','#06b6d4','#ec4899','#f97316','#3b82f6','#14b8a6'];
+  subjectIcons = ['database','chart','cpu','book','code','flask','globe','calculator','layers','music','trophy','sparkles'];
+
+  state = {
+    theme: (this.props.defaultTheme === 'dark') ? 'dark' : 'light',
+    collapsed: false,
+    search: '',
+    subjects: this.seed(),
+    selectedSubjectId: 'dm',
+    view: 'home',
+    selectedChapterId: null,
+    cardIndex: 0,
+    selected: null,
+    answered: false,
+    flipped: false,
+    results: {},
+    studyComplete: false,
+    editingSubjectId: null,
+    dragId: null,
+    modalOpen: false,
+    modalChapterId: null,
+    form: { q:'', a:'', b:'', c:'', d:'', correct:0, code:'', explanation:'' },
+  };
+
+  seed() {
+    let cid = 0, chid = 0;
+    const C = (q, o, correct, explanation, extra) => { extra = extra || {}; return { id:'c'+(++cid), q, options:o, correct, explanation, mastered:!!extra.mastered, code:extra.code||null }; };
+    const CH = (name, cards) => ({ id:'ch'+(++chid), name, cards });
+    return [
+      { id:'dm', name:'Data Mining', color:'#6366f1', icon:'database', chapters:[
+        CH('Unit 1: Core Concepts', [
+          C('Which of the following best defines data mining?', ['Storing large volumes of records in a warehouse','Discovering patterns and knowledge from large data sets','Manually entering data into a spreadsheet','Encrypting sensitive customer information'], 1, 'Data mining is the computational process of discovering patterns, correlations and useful knowledge from large datasets, at the intersection of statistics, machine learning and databases.', {mastered:true}),
+          C('In the KDD process, which step immediately precedes the data mining step?', ['Pattern evaluation','Knowledge presentation','Data selection & preprocessing','Reporting results'], 2, 'KDD flows selection → preprocessing → transformation → data mining → evaluation. Preprocessing and transformation prepare the data right before mining.', {mastered:true}),
+          C('Which data-mining task predicts a continuous numeric value?', ['Classification','Clustering','Regression','Association'], 2, 'Regression predicts continuous outputs (e.g. price or temperature), while classification predicts discrete class labels.', {mastered:true}),
+          C('"Market basket analysis" is a classic application of which technique?', ['Association rule mining','Decision trees','K-means clustering','Linear regression'], 0, 'Market basket analysis uses association rule mining (e.g. the Apriori algorithm) to find itemsets frequently bought together, such as {diapers} → {beer}.'),
+          C('A high "support" value for an association rule indicates that…', ['the rule is extremely confident','the itemset appears frequently in the dataset','the items are negatively correlated','the rule has very low lift'], 1, 'Support measures how frequently an itemset appears across all transactions. Confidence (not support) measures how reliable the implication is.'),
+          C('What will the following pandas snippet compute?', ['Total sales for every category','The average sales for each category','The number of rows in each category','The single maximum sale overall'], 1, "groupby('category') groups the rows by category, and .mean() then computes the average of the 'sales' column within each group.", {code:"df.groupby('category')['sales'].mean()"}),
+        ]),
+        CH('Unit 2: Classification', [
+          C('Which algorithm builds a tree of if-then decision rules?', ['K-nearest neighbours','Decision tree','K-means','Apriori'], 1, 'A decision tree recursively splits the data on feature tests, producing a hierarchy of if-then rules that lead to class labels.', {mastered:true}),
+          C('A model scores 99% on training data but 60% on new data. This is:', ['Underfitting','Overfitting','Regularization','Normalization'], 1, 'Overfitting means the model memorized noise in the training set and fails to generalize to unseen data.'),
+          C('Which metric is the harmonic mean of precision and recall?', ['Accuracy','Specificity','F1 score','ROC area'], 2, 'The F1 score balances precision and recall as their harmonic mean, useful when classes are imbalanced.'),
+          C('In a confusion matrix, a "false positive" is a case that is:', ['Actually positive and predicted positive','Predicted positive but actually negative','Actually negative and predicted negative','Predicted negative but actually positive'], 1, 'A false positive is predicted as the positive class while truly belonging to the negative class — a "false alarm".'),
+        ]),
+        CH('Unit 3: Clustering', [
+          C('The K-means algorithm requires you to specify in advance:', ['The class labels','The number of clusters k','The maximum tree depth','The support threshold'], 1, 'K-means needs k, the number of clusters, before it begins assigning points to the nearest centroid.'),
+          C('Which clustering method produces a dendrogram?', ['K-means','DBSCAN','Hierarchical clustering','Apriori'], 2, 'Hierarchical clustering builds a tree (dendrogram) of nested clusters that can be cut at any level.'),
+          C('DBSCAN is particularly well suited to:', ['Perfectly spherical clusters only','Finding arbitrarily shaped clusters and handling noise','Predicting continuous values','Mining frequent itemsets'], 1, 'DBSCAN groups dense regions, can find non-convex shapes, and labels low-density points as noise/outliers.'),
+        ]),
+      ]},
+      { id:'stat', name:'Statistics', color:'#10b981', icon:'chart', chapters:[
+        CH('Descriptive Statistics', [
+          C('The middle value of a sorted dataset is the:', ['Mean','Median','Mode','Range'], 1, 'The median is the middle value and is robust to extreme outliers, unlike the mean.', {mastered:true}),
+          C('Standard deviation measures:', ['The most frequent value','The spread of data around the mean','The middle value','The total count'], 1, 'Standard deviation quantifies how dispersed values are around their mean.', {mastered:true}),
+          C('Which measure of central tendency is most affected by outliers?', ['Median','Mode','Mean','Interquartile range'], 2, 'The mean shifts toward extreme values, so a single large outlier can distort it heavily.'),
+        ]),
+        CH('Probability', [
+          C('For two independent events A and B, P(A and B) equals:', ['P(A) + P(B)','P(A) × P(B)','P(A) − P(B)','P(A) / P(B)'], 1, 'For independent events, the joint probability is the product of the individual probabilities.', {mastered:true}),
+          C('A valid probability value must lie between:', ['−1 and 1','0 and 100','0 and 1','1 and 10'], 2, 'Probabilities are always in the range [0, 1], where 0 is impossible and 1 is certain.'),
+          C("Bayes' theorem is used to compute:", ['A continuous regression line','A conditional (posterior) probability','The variance of a sample','The number of clusters'], 1, "Bayes' theorem updates the probability of a hypothesis given new evidence — a posterior probability."),
+        ]),
+      ]},
+      { id:'ml', name:'Machine Learning', color:'#8b5cf6', icon:'cpu', chapters:[
+        CH('Supervised Learning', [
+          C('Supervised learning requires:', ['Only input features','Labeled training examples','No data at all','Cluster centroids'], 1, 'Supervised learning trains on input–output pairs where the correct output (label) is known.', {mastered:true}),
+          C('Logistic regression is most commonly used for:', ['Clustering','Classification','Dimensionality reduction','Association mining'], 1, 'Despite its name, logistic regression predicts class probabilities and is used for classification.', {mastered:true}),
+          C('Splitting data into train and test sets primarily helps to:', ['Speed up training','Estimate how well the model generalizes','Increase the dataset size','Remove all outliers'], 1, 'A held-out test set measures performance on unseen data, guarding against overfitting.', {mastered:true}),
+        ]),
+        CH('Neural Networks', [
+          C('Which activation function outputs 0 for negative inputs and the input itself for positives?', ['Sigmoid','Tanh','ReLU','Softmax'], 2, 'ReLU (Rectified Linear Unit) returns max(0, x), which helps deep networks train efficiently.'),
+          C('Backpropagation is used to:', ['Initialize weights randomly','Propagate error gradients backward to update weights','Normalize the inputs','Select the number of layers'], 1, 'Backpropagation computes gradients of the loss with respect to each weight by the chain rule, enabling gradient descent.'),
+        ]),
+      ]},
+      { id:'eng', name:'English Literature', color:'#f59e0b', icon:'book', chapters:[
+        CH('Literary Devices', [
+          C('"The wind whispered through the trees" is an example of:', ['Simile','Personification','Hyperbole','Alliteration'], 1, 'Personification gives human qualities (whispering) to non-human things (the wind).', {mastered:true}),
+          C('A comparison using "like" or "as" is called a:', ['Metaphor','Simile','Allegory','Onomatopoeia'], 1, 'A simile explicitly compares two things using "like" or "as" — e.g. "brave as a lion".'),
+          C('A deliberate, extreme exaggeration for effect is a:', ['Hyperbole','Irony','Symbolism','Pun'], 0, 'Hyperbole uses obvious overstatement for emphasis — e.g. "I have told you a million times".'),
+        ]),
+      ]},
+    ];
+  }
+
+  ic(name, size, opts) {
+    size = size || 20; opts = opts || {};
+    const filled = { grip:1, play:1 };
+    const D = {
+      database:[['ellipse',{cx:12,cy:5,rx:9,ry:3}],['path',{d:'M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5'}],['path',{d:'M3 12c0 1.66 4 3 9 3s9-1.34 9-3'}]],
+      chart:[['path',{d:'M3 3v18h18'}],['path',{d:'M18 17V9'}],['path',{d:'M13 17V5'}],['path',{d:'M8 17v-3'}]],
+      cpu:[['rect',{x:4,y:4,width:16,height:16,rx:2}],['rect',{x:9,y:9,width:6,height:6}],['path',{d:'M9 2v2'}],['path',{d:'M15 2v2'}],['path',{d:'M9 20v2'}],['path',{d:'M15 20v2'}],['path',{d:'M2 9h2'}],['path',{d:'M2 15h2'}],['path',{d:'M20 9h2'}],['path',{d:'M20 15h2'}]],
+      book:[['path',{d:'M4 19.5A2.5 2.5 0 0 1 6.5 17H20'}],['path',{d:'M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z'}]],
+      code:[['path',{d:'m16 18 6-6-6-6'}],['path',{d:'m8 6-6 6 6 6'}]],
+      flask:[['path',{d:'M9 3h6'}],['path',{d:'M10 3v6.5L4.6 18.9A1 1 0 0 0 5.5 20.4h13a1 1 0 0 0 .9-1.5L14 9.5V3'}],['path',{d:'M7.5 14h9'}]],
+      globe:[['circle',{cx:12,cy:12,r:10}],['path',{d:'M2 12h20'}],['path',{d:'M12 2a15.3 15.3 0 0 1 0 20 15.3 15.3 0 0 1 0-20'}]],
+      calculator:[['rect',{x:4,y:2,width:16,height:20,rx:2}],['line',{x1:8,x2:16,y1:6,y2:6}],['path',{d:'M8 10h.01'}],['path',{d:'M12 10h.01'}],['path',{d:'M16 10h.01'}],['path',{d:'M8 14h.01'}],['path',{d:'M12 14h.01'}],['path',{d:'M16 14v4'}],['path',{d:'M8 18h.01'}],['path',{d:'M12 18h.01'}]],
+      layers:[['path',{d:'m12 2 9 5-9 5-9-5 9-5z'}],['path',{d:'m3 12 9 5 9-5'}],['path',{d:'m3 17 9 5 9-5'}]],
+      music:[['path',{d:'M9 18V5l12-2v13'}],['circle',{cx:6,cy:18,r:3}],['circle',{cx:18,cy:16,r:3}]],
+      trophy:[['path',{d:'M6 9H4.5a2.5 2.5 0 0 1 0-5H6'}],['path',{d:'M18 9h1.5a2.5 2.5 0 0 0 0-5H18'}],['path',{d:'M4 22h16'}],['path',{d:'M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22'}],['path',{d:'M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22'}],['path',{d:'M18 2H6v7a6 6 0 0 0 12 0V2z'}]],
+      sparkles:[['path',{d:'M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z'}],['path',{d:'M19 15l.7 1.9L21.5 17.5l-1.8.7L19 20l-.7-1.8-1.8-.7 1.8-.6z'}]],
+      folder:[['path',{d:'M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2z'}]],
+      plus:[['path',{d:'M5 12h14'}],['path',{d:'M12 5v14'}]],
+      chevR:[['path',{d:'m9 18 6-6-6-6'}]],
+      collapse:[['path',{d:'m11 17-5-5 5-5'}],['path',{d:'m18 17-5-5 5-5'}]],
+      expand:[['path',{d:'m13 17 5-5-5-5'}],['path',{d:'m6 17 5-5-5-5'}]],
+      search:[['circle',{cx:11,cy:11,r:8}],['path',{d:'m21 21-4.3-4.3'}]],
+      sun:[['circle',{cx:12,cy:12,r:4}],['path',{d:'M12 2v2'}],['path',{d:'M12 20v2'}],['path',{d:'m4.9 4.9 1.4 1.4'}],['path',{d:'m17.7 17.7 1.4 1.4'}],['path',{d:'M2 12h2'}],['path',{d:'M20 12h2'}],['path',{d:'m6.3 17.7-1.4 1.4'}],['path',{d:'m19.1 4.9-1.4 1.4'}]],
+      moon:[['path',{d:'M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z'}]],
+      check:[['path',{d:'M20 6 9 17l-5-5'}]],
+      x:[['path',{d:'M18 6 6 18'}],['path',{d:'m6 6 12 12'}]],
+      pencil:[['path',{d:'M12 20h9'}],['path',{d:'M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z'}]],
+      trash:[['path',{d:'M3 6h18'}],['path',{d:'M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6'}],['path',{d:'M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2'}]],
+      flame:[['path',{d:'M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.07-2.14-.22-4.05 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.15.43-2.29 1-3a2.5 2.5 0 0 0 2.5 2.5z'}]],
+      rotate:[['path',{d:'M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8'}],['path',{d:'M3 3v5h5'}]],
+      arrowL:[['path',{d:'m12 19-7-7 7-7'}],['path',{d:'M19 12H5'}]],
+      arrowR:[['path',{d:'M5 12h14'}],['path',{d:'m12 5 7 7-7 7'}]],
+      play:[['polygon',{points:'6 4 20 12 6 20 6 4'}]],
+      zap:[['path',{d:'M13 2 3 14h9l-1 8 10-12h-9l1-8z'}]],
+      compass:[['circle',{cx:12,cy:12,r:10}],['path',{d:'m16.24 7.76-2.12 6.36-6.36 2.12 2.12-6.36 6.36-2.12z'}]],
+      upload:[['path',{d:'M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4'}],['polyline',{points:'17 8 12 3 7 8'}],['line',{x1:12,y1:3,x2:12,y2:15}]],
+      home:[['path',{d:'m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z'}],['polyline',{points:'9 22 9 12 15 12 15 22'}]],
+      clock:[['circle',{cx:12,cy:12,r:10}],['path',{d:'M12 6v6l4 2'}]],
+    };
+    const parts = D[name] || [];
+    const children = parts.map((p, i) => React.createElement(p[0], Object.assign({ key:i }, p[1])));
+    return React.createElement('svg', {
+      width:size, height:size, viewBox:'0 0 24 24',
+      fill: filled[name] ? 'currentColor' : 'none',
+      stroke: filled[name] ? 'none' : 'currentColor',
+      strokeWidth: opts.sw || 2, strokeLinecap:'round', strokeLinejoin:'round',
+      style:{ flex:'none', display:'block' }
+    }, children);
+  }
+
+  componentDidMount() {
+    try {
+      const raw = localStorage.getItem('quizflow.v1');
+      if (raw) {
+        const s = JSON.parse(raw);
+        const upd = {};
+        if (Array.isArray(s.subjects) && s.subjects.length) upd.subjects = s.subjects;
+        if (s.theme) upd.theme = s.theme;
+        if (s.selectedSubjectId) upd.selectedSubjectId = s.selectedSubjectId;
+        if (Object.keys(upd).length) this.setState(upd);
+      }
+    } catch (e) {}
+  }
+
+  persist() {
+    try {
+      localStorage.setItem('quizflow.v1', JSON.stringify({
+        theme: this.state.theme, subjects: this.state.subjects, selectedSubjectId: this.state.selectedSubjectId
+      }));
+    } catch (e) {}
+  }
+
+  curSubject() { return this.state.subjects.find(s => s.id === this.state.selectedSubjectId) || this.state.subjects[0]; }
+  curChapter() { const s = this.curSubject(); if (!s) return null; return s.chapters.find(c => c.id === this.state.selectedChapterId) || null; }
+
+  // ---- navigation
+  selectSubject(id) { this.setState({ selectedSubjectId:id, view:'dashboard', selectedChapterId:null, editingSubjectId:null }, () => this.persist()); }
+  goDashboard() { this.setState({ view:'dashboard', selectedChapterId:null, studyComplete:false }); }
+  studyChapter(chId) { this._cardAnim = true; this.setState({ view:'study', selectedChapterId:chId, cardIndex:0, selected:null, answered:false, flipped:false, results:{}, studyComplete:false }); }
+  toggleTheme() { this.setState(st => ({ theme: st.theme === 'dark' ? 'light' : 'dark' }), () => this.persist()); }
+  toggleCollapse() { this.setState(st => ({ collapsed: !st.collapsed })); }
+  goHome() { this.setState({ view:'home', selectedChapterId:null, studyComplete:false }); }
+
+  // ---- study
+  answer(i) {
+    if (this.state.answered) return;
+    const chap = this.curChapter(); if (!chap) return;
+    const card = chap.cards[this.state.cardIndex];
+    const correct = i === card.correct;
+    if (!correct) this._shakePending = true;
+    this.setState(st => {
+      const results = Object.assign({}, st.results, { [card.id]: correct });
+      let subjects = st.subjects;
+      if (correct && !card.mastered) subjects = this.markMastered(st.subjects, this.state.selectedSubjectId, chap.id, card.id);
+      return { selected:i, answered:true, results, subjects };
+    }, () => this.persist());
+  }
+  markMastered(subjects, sid, chid, cardId) {
+    return subjects.map(s => s.id !== sid ? s : Object.assign({}, s, {
+      chapters: s.chapters.map(c => c.id !== chid ? c : Object.assign({}, c, {
+        cards: c.cards.map(cd => cd.id !== cardId ? cd : Object.assign({}, cd, { mastered:true }))
+      }))
+    }));
+  }
+  next() {
+    const chap = this.curChapter(); if (!chap) return;
+    if (this.state.cardIndex >= chap.cards.length - 1) { this.setState({ studyComplete:true }); return; }
+    this._cardAnim = true;
+    this.setState(st => ({ cardIndex: st.cardIndex + 1, selected:null, answered:false, flipped:false }));
+  }
+  prev() {
+    if (this.state.cardIndex <= 0) return;
+    this._cardAnim = true;
+    this.setState(st => ({ cardIndex: st.cardIndex - 1, selected:null, answered:false, flipped:false }));
+  }
+  flip() { this.setState(st => ({ flipped: !st.flipped })); }
+  restart() { this._cardAnim = true; this.setState({ cardIndex:0, selected:null, answered:false, flipped:false, results:{}, studyComplete:false }); }
+
+  shakeRef = (el) => {
+    if (el && this._shakePending) {
+      this._shakePending = false;
+      try { el.animate([{transform:'translateX(0)'},{transform:'translateX(-9px)'},{transform:'translateX(8px)'},{transform:'translateX(-6px)'},{transform:'translateX(4px)'},{transform:'translateX(0)'}], {duration:440, easing:'ease-in-out'}); } catch (e) {}
+    }
+  };
+  cardRef = (el) => {
+    if (el && this._cardAnim) {
+      this._cardAnim = false;
+      try { el.animate([{opacity:0, transform:'translateY(10px)'},{opacity:1, transform:'none'}], {duration:320, easing:'cubic-bezier(.2,.7,.2,1)'}); } catch (e) {}
+    }
+  };
+  mainRef = (el) => { this._mainEl = el; };
+
+  // ---- subjects CRUD
+  createSubject() {
+    const id = 's' + Date.now();
+    const color = this.palette[Math.floor(Math.random() * this.palette.length)];
+    this.setState(st => ({
+      subjects: st.subjects.concat([{ id, name:'New Subject', color, icon:'folder', chapters:[] }]),
+      selectedSubjectId:id, view:'dashboard', selectedChapterId:null, editingSubjectId:id
+    }), () => this.persist());
+  }
+  renameSubject(id, name) { this.setState(st => ({ subjects: st.subjects.map(s => s.id === id ? Object.assign({}, s, { name }) : s) }), () => this.persist()); }
+  setSubjectColor(id, color) { this.setState(st => ({ subjects: st.subjects.map(s => s.id === id ? Object.assign({}, s, { color }) : s) }), () => this.persist()); }
+  setSubjectIcon(id, icon) { this.setState(st => ({ subjects: st.subjects.map(s => s.id === id ? Object.assign({}, s, { icon }) : s) }), () => this.persist()); }
+  deleteSubject(id) {
+    this.setState(st => {
+      if (st.subjects.length <= 1) return {};
+      const subjects = st.subjects.filter(s => s.id !== id);
+      const sel = st.selectedSubjectId === id ? subjects[0].id : st.selectedSubjectId;
+      return { subjects, selectedSubjectId:sel, editingSubjectId:null, view:'dashboard', selectedChapterId:null };
+    }, () => this.persist());
+  }
+  reorder(targetId) {
+    const dragId = this.state.dragId;
+    if (!dragId || dragId === targetId) return;
+    this.setState(st => {
+      const arr = st.subjects.slice();
+      const from = arr.findIndex(s => s.id === dragId);
+      const to = arr.findIndex(s => s.id === targetId);
+      if (from < 0 || to < 0) return {};
+      const [moved] = arr.splice(from, 1);
+      arr.splice(to, 0, moved);
+      return { subjects: arr, dragId:null };
+    }, () => this.persist());
+  }
+
+  // ---- chapters
+  addChapter() {
+    const sid = this.state.selectedSubjectId;
+    this.setState(st => ({
+      subjects: st.subjects.map(s => s.id !== sid ? s : Object.assign({}, s, {
+        chapters: s.chapters.concat([{ id:'ch'+Date.now(), name:'New Section', cards:[] }])
+      }))
+    }), () => this.persist());
+  }
+  renameChapter(chId, name) {
+    const sid = this.state.selectedSubjectId;
+    this.setState(st => ({
+      subjects: st.subjects.map(s => s.id !== sid ? s : Object.assign({}, s, {
+        chapters: s.chapters.map(c => c.id === chId ? Object.assign({}, c, { name }) : c)
+      }))
+    }), () => this.persist());
+  }
+
+  // ---- modal / create card
+  openCard(chId) { this.setState({ modalOpen:true, modalChapterId:chId, form:{ q:'', a:'', b:'', c:'', d:'', correct:0, code:'', explanation:'' } }); }
+  closeModal() { this.setState({ modalOpen:false }); }
+  setForm(key, val) { this.setState(st => ({ form: Object.assign({}, st.form, { [key]: val }) })); }
+  saveCard() {
+    const f = this.state.form;
+    const opts = [f.a, f.b, f.c, f.d];
+    if (!f.q.trim() || opts.some(o => !o.trim())) return;
+    const sid = this.state.selectedSubjectId;
+    const chId = this.state.modalChapterId;
+    const card = { id:'c'+Date.now(), q:f.q.trim(), options:opts.map(o => o.trim()), correct:f.correct, explanation:f.explanation.trim(), mastered:false, code: f.code.trim() || null };
+    this.setState(st => ({
+      modalOpen:false,
+      subjects: st.subjects.map(s => s.id !== sid ? s : Object.assign({}, s, {
+        chapters: s.chapters.map(c => c.id !== chId ? c : Object.assign({}, c, { cards: c.cards.concat([card]) }))
+      }))
+    }), () => this.persist());
+  }
+
+  renderVals() {
+    const S = this.state;
+    const dark = S.theme === 'dark';
+    const accents = {
+      Indigo:{ p:'#6366f1', pd:'#818cf8', strong:'#4f46e5', softL:'#eef1ff', softD:'#20243a' },
+      Violet:{ p:'#8b5cf6', pd:'#a78bfa', strong:'#7c3aed', softL:'#f3eeff', softD:'#241d3a' },
+      Blue:{ p:'#3b82f6', pd:'#60a5fa', strong:'#2563eb', softL:'#e8f0ff', softD:'#16243f' },
+      Teal:{ p:'#14b8a6', pd:'#2dd4bf', strong:'#0d9488', softL:'#e3f7f4', softD:'#0e2926' },
+    };
+    const a = accents[this.props.accent] || accents.Indigo;
+    const t = dark ? {
+      bg:'#0e1016', surface:'#161922', surface2:'#1e222e', surface3:'#262b39',
+      border:'#262b39', borderS:'#323848', text:'#eceef6', text2:'#a0a6bd', text3:'#6c7388',
+      primary:a.pd, primaryStrong:a.pd, primarySoft:a.softD,
+      emerald:'#34d399', emeraldSoft:'#10261f', emeraldBorder:'#1d5e4a',
+      crimson:'#fb7185', crimsonSoft:'#2a1620', crimsonBorder:'#5e2436',
+      amber:'#fbbf24', amberSoft:'#2a2113', sidebar:'#12141c', codeBg:'#070a12',
+      shadow:'0 1px 3px rgba(0,0,0,.5)', shadowL:'0 18px 56px rgba(0,0,0,.6)'
+    } : {
+      bg:'#f5f6fa', surface:'#ffffff', surface2:'#f1f3f9', surface3:'#e9ecf4',
+      border:'#e9ebf2', borderS:'#dde1ec', text:'#171a23', text2:'#5b6178', text3:'#959bb0',
+      primary:a.p, primaryStrong:a.strong, primarySoft:a.softL,
+      emerald:'#10b981', emeraldSoft:'#e8f8f1', emeraldBorder:'#a7e8cf',
+      crimson:'#f43f5e', crimsonSoft:'#fdecef', crimsonBorder:'#f8c1cb',
+      amber:'#f59e0b', amberSoft:'#fff6e6', sidebar:'#ffffff', codeBg:'#0f1320',
+      shadow:'0 1px 2px rgba(20,30,60,.06)', shadowL:'0 16px 50px rgba(30,40,80,.14)'
+    };
+    const themeVars = {
+      '--bg':t.bg, '--surface':t.surface, '--surface2':t.surface2, '--surface3':t.surface3,
+      '--border':t.border, '--border-s':t.borderS, '--text':t.text, '--text2':t.text2, '--text3':t.text3,
+      '--primary':t.primary, '--primary-strong':t.primaryStrong, '--primary-soft':t.primarySoft,
+      '--emerald':t.emerald, '--emerald-soft':t.emeraldSoft, '--emerald-border':t.emeraldBorder,
+      '--crimson':t.crimson, '--crimson-soft':t.crimsonSoft, '--crimson-border':t.crimsonBorder,
+      '--amber':t.amber, '--amber-soft':t.amberSoft, '--shadow':t.shadow, '--shadow-l':t.shadowL, '--code-bg':t.codeBg,
+      display:'flex', height:'100vh', width:'100%', overflow:'hidden',
+      fontFamily: this.props.font === 'Inter' ? "'Inter',system-ui,sans-serif" : "'Plus Jakarta Sans',system-ui,sans-serif",
+      color:'var(--text)', background:'var(--bg)'
+    };
+
+    const collapsed = S.collapsed;
+    const showLabels = !collapsed;
+    const cur = this.curSubject();
+
+    // sidebar subjects
+    const q = S.search.trim().toLowerCase();
+    const subjects = S.subjects.filter(s => !q || s.name.toLowerCase().includes(q)).map(s => {
+      const cardCount = s.chapters.reduce((n, c) => n + c.cards.length, 0);
+      const active = cur && s.id === cur.id;
+      return {
+        id:s.id, name:s.name, cardCount, editing: S.editingSubjectId === s.id,
+        iconEl: this.ic(s.icon, 17),
+        chipStyle:{ flex:'none', width:'30px', height:'30px', borderRadius:'9px', display:'flex', alignItems:'center', justifyContent:'center', background: s.color + '24', color: s.color },
+        itemStyle:{ display:'flex', alignItems:'center', gap:'11px', padding: collapsed ? '8px' : '8px 10px', borderRadius:'11px', cursor:'pointer', background: active ? 'var(--primary-soft)' : 'transparent', color:'var(--text)', transition:'background .15s', justifyContent: collapsed ? 'center' : 'flex-start', boxShadow: active ? 'inset 3px 0 0 var(--primary)' : 'none' },
+        itemHover: active ? {} : { background:'var(--surface2)' },
+        countStyle:{ fontSize:'11px', fontWeight:700, color:'var(--text3)', background:'var(--surface2)', padding:'2px 7px', borderRadius:'999px' },
+        editBtnStyle:{ flex:'none', width:'26px', height:'26px', borderRadius:'7px', border:'none', background:'transparent', color:'var(--text3)', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', transition:'all .15s' },
+        onSelect: () => this.selectSubject(s.id),
+        onEdit: (e) => { e.stopPropagation(); this.setState(st => ({ editingSubjectId: st.editingSubjectId === s.id ? null : s.id })); },
+        onName: (e) => this.renameSubject(s.id, e.target.value),
+        onDelete: () => this.deleteSubject(s.id),
+        onDragStart: () => this.setState({ dragId:s.id }),
+        onDragOver: (e) => e.preventDefault(),
+        onDrop: (e) => { e.preventDefault(); this.reorder(s.id); },
+        colorSwatches: this.palette.map(col => ({ onPick: () => this.setSubjectColor(s.id, col), style:{ width:'22px', height:'22px', borderRadius:'7px', background:col, border: col.toLowerCase() === s.color.toLowerCase() ? '2px solid var(--text)' : '2px solid transparent', cursor:'pointer', padding:0 } })),
+        iconChoices: this.subjectIcons.map(name => ({ el: this.ic(name, 15), onPick: () => this.setSubjectIcon(s.id, name), style:{ height:'30px', borderRadius:'8px', border:'none', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', background: name === s.icon ? 'var(--primary-soft)' : 'var(--surface)', color: name === s.icon ? 'var(--primary-strong)' : 'var(--text2)', transition:'all .15s' } })),
+      };
+    });
+
+    const sidebarStyle = { flex:'none', width: collapsed ? '74px' : '264px', background:'var(--sidebar)', borderRight:'1px solid var(--border)', display:'flex', flexDirection:'column', transition:'width .2s cubic-bezier(.4,0,.2,1)' };
+
+    // breadcrumb
+    const isHome = S.view === 'home';
+    const isDashboard = S.view === 'dashboard';
+    const isStudy = S.view === 'study';
+    const chap = this.curChapter();
+    const baseCrumb = { fontSize:'14px', fontWeight:600, border:'none', background:'transparent', cursor:'pointer', padding:'5px 8px', borderRadius:'8px', transition:'all .15s' };
+    const crumbs = [];
+    if (isHome) {
+      crumbs.push({ label:'Home', notFirst:false, onClick:()=>{}, style:Object.assign({},baseCrumb,{color:'var(--text)',fontWeight:700,cursor:'default'}), hover:{} });
+    } else {
+      crumbs.push({ label:'Home', notFirst:false, onClick:()=>this.goHome(), style:Object.assign({},baseCrumb,{color:'var(--text2)'}), hover:{background:'var(--surface2)'} });
+      crumbs.push({ label:cur?cur.name:'', notFirst:true, onClick:()=>this.goDashboard(), style:Object.assign({},baseCrumb,{color:isStudy?'var(--text2)':'var(--text)',fontWeight:isStudy?600:700}), hover:isStudy?{background:'var(--surface2)'}:{} });
+      if (isStudy && chap) crumbs.push({ label:chap.name, notFirst:true, onClick:()=>{}, style:Object.assign({},baseCrumb,{color:'var(--text)',fontWeight:700,cursor:'default'}), hover:{} });
+    }
+
+    // dashboard
+    const totalCards = cur ? cur.chapters.reduce((n, c) => n + c.cards.length, 0) : 0;
+    const masteredAll = cur ? cur.chapters.reduce((n, c) => n + c.cards.filter(cd => cd.mastered).length, 0) : 0;
+    const overallPct = totalCards ? Math.round(masteredAll / totalCards * 100) : 0;
+    const chapters = cur ? cur.chapters.map(c => {
+      const cc = c.cards.length;
+      const mc = c.cards.filter(cd => cd.mastered).length;
+      const pct = cc ? Math.round(mc / cc * 100) : 0;
+      return {
+        id:c.id, name:c.name, cardCount:cc, masteredCount:mc, pct,
+        onName: (e) => this.renameChapter(c.id, e.target.value),
+        onStudy: () => this.studyChapter(c.id),
+        onAddCard: () => this.openCard(c.id),
+        barStyle:{ height:'100%', width: pct + '%', borderRadius:'999px', background: pct === 100 ? 'var(--emerald)' : 'linear-gradient(90deg,var(--primary),var(--primary-strong))', transition:'width .5s cubic-bezier(.2,.7,.2,1)' },
+        pctBadgeStyle:{ flex:'none', fontSize:'11.5px', fontWeight:700, padding:'3px 9px', borderRadius:'999px', background: pct === 100 ? 'var(--emerald-soft)' : 'var(--surface2)', color: pct === 100 ? 'var(--emerald)' : 'var(--text2)' },
+      };
+    }) : [];
+
+    // study
+    const hasCards = isStudy && chap && chap.cards.length > 0;
+    const isEmptyChapter = isStudy && chap && chap.cards.length === 0 && !S.studyComplete;
+    let card = null, options = [], cardNum = 0, cardTotal = chap ? chap.cards.length : 0;
+    let correctLetter = '', correctText = '', cardExplanation = '', cardQuestion = '', cardCode = '', hasCode = false;
+    if (hasCards) {
+      card = chap.cards[S.cardIndex];
+      cardNum = S.cardIndex + 1;
+      cardQuestion = card.q; cardCode = card.code || ''; hasCode = !!card.code;
+      cardExplanation = card.explanation || 'No explanation provided for this card.';
+      correctLetter = 'ABCD'[card.correct]; correctText = card.options[card.correct];
+      const answered = S.answered, sel = S.selected, corr = card.correct;
+      options = card.options.map((text, i) => {
+        let bg='var(--surface)', bd='1.5px solid var(--border-s)', col='var(--text)', op=1, lbg='var(--surface2)', lcol='var(--text2)', lbd='1.5px solid transparent';
+        let showIcon=false, iconEl=null, iconColor='';
+        if (answered) {
+          if (i === corr) { bg='var(--emerald-soft)'; bd='1.5px solid var(--emerald)'; lbg='var(--emerald)'; lcol='#fff'; lbd='1.5px solid var(--emerald)'; showIcon=true; iconEl=this.ic('check',15); iconColor='var(--emerald)'; }
+          else if (i === sel) { bg='var(--crimson-soft)'; bd='1.5px solid var(--crimson)'; lbg='var(--crimson)'; lcol='#fff'; lbd='1.5px solid var(--crimson)'; showIcon=true; iconEl=this.ic('x',15); iconColor='var(--crimson)'; }
+          else { op=0.5; }
+        }
+        return {
+          letter:'ABCD'[i], text,
+          onClick: () => this.answer(i),
+          ref: (answered && i === sel && i !== corr) ? this.shakeRef : null,
+          style:{ display:'flex', alignItems:'center', gap:'13px', width:'100%', textAlign:'left', padding:'15px 16px', borderRadius:'14px', background:bg, border:bd, color:col, opacity:op, cursor: answered ? 'default' : 'pointer', fontSize:'15px', fontWeight:500, transition:'transform .15s, box-shadow .2s, border-color .2s, background .2s, opacity .2s' },
+          hover: answered ? {} : { borderColor:'var(--primary)', boxShadow:'0 8px 22px var(--primary-soft)', transform:'translateY(-1px)' },
+          letterStyle:{ flex:'none', width:'30px', height:'30px', borderRadius:'9px', display:'flex', alignItems:'center', justifyContent:'center', background:lbg, color:lcol, border:lbd, fontWeight:700, fontSize:'14px', transition:'all .2s' },
+          showIcon, iconEl, iconStyle:{ marginLeft:'auto', color:iconColor, display:'flex' }
+        };
+      });
+    }
+    const answeredCount = Object.keys(S.results).length;
+    const correctCount = Object.values(S.results).filter(Boolean).length;
+    const studyBarStyle = { height:'100%', width: cardTotal ? (cardNum / cardTotal * 100) + '%' : '0%', borderRadius:'999px', background:'linear-gradient(90deg,var(--primary),var(--primary-strong))', transition:'width .4s cubic-bezier(.2,.7,.2,1)' };
+    const scoreLabel = answeredCount ? (correctCount + ' / ' + answeredCount + ' correct') : '';
+
+    const faceBase = { background:'var(--surface)', border:'1px solid var(--border)', borderRadius:'22px', padding:'30px 30px', boxShadow:'var(--shadow-l)', backfaceVisibility:'hidden', WebkitBackfaceVisibility:'hidden' };
+    const flipStyle = { position:'relative', transformStyle:'preserve-3d', transition:'transform .6s cubic-bezier(.4,.1,.2,1)', transform: S.flipped ? 'rotateY(180deg)' : 'none', minHeight:'380px' };
+    const frontStyle = Object.assign({}, faceBase, { position:'relative', minHeight:'380px', display:'flex', flexDirection:'column', justifyContent:'center', opacity: S.flipped ? 0 : 1, transition:'opacity .1s linear .3s' });
+    const backStyle = Object.assign({}, faceBase, { position:'absolute', inset:'0', transform:'rotateY(180deg)', display:'flex', flexDirection:'column', justifyContent:'center', overflowY:'auto', opacity: S.flipped ? 1 : 0, transition:'opacity .1s linear .3s' });
+
+    const btnPrimary = { display:'flex', alignItems:'center', gap:'8px', padding:'12px 20px', borderRadius:'12px', border:'none', background:'linear-gradient(135deg,var(--primary),var(--primary-strong))', color:'#fff', fontSize:'14px', fontWeight:600, cursor:'pointer', boxShadow:'0 8px 20px var(--primary-soft)', transition:'transform .15s, box-shadow .2s' };
+    const prevDisabled = S.cardIndex <= 0;
+    const isLast = chap && S.cardIndex >= (chap.cards.length - 1);
+
+    // modal preview + form
+    const f = S.form;
+    const formOptions = ['a','b','c','d'].map((k, i) => ({
+      value: f[k], onChange: (e) => this.setForm(k, e.target.value), placeholder: 'Option ' + 'ABCD'[i],
+      onPick: () => this.setForm('correct', i),
+      radioStyle:{ flex:'none', width:'24px', height:'24px', borderRadius:'999px', cursor:'pointer', border: f.correct === i ? '2px solid var(--emerald)' : '2px solid var(--border-s)', background:'transparent', display:'flex', alignItems:'center', justifyContent:'center', padding:0, transition:'all .15s' },
+      radioInner: f.correct === i ? React.createElement('span', { style:{ width:'11px', height:'11px', borderRadius:'999px', background:'var(--emerald)' } }) : null,
+      inputStyle:{ flex:1, minWidth:0, border:'1px solid var(--border-s)', background:'var(--surface)', borderRadius:'10px', padding:'9px 12px', fontSize:'14px', color:'var(--text)', outline:'none', transition:'border-color .15s' },
+    }));
+    const previewOptions = ['a','b','c','d'].map((k, i) => {
+      const text = f[k]; const isC = f.correct === i;
+      return {
+        letter:'ABCD'[i], text: text || 'Option ' + 'ABCD'[i], correct: isC,
+        style:{ display:'flex', alignItems:'center', gap:'10px', padding:'10px 12px', borderRadius:'11px', border: isC ? '1.5px solid var(--emerald)' : '1.5px solid var(--border-s)', background: isC ? 'var(--emerald-soft)' : 'var(--surface)', fontSize:'13.5px', fontWeight:500, color:'var(--text)', opacity: text ? 1 : 0.55 },
+        letterStyle:{ flex:'none', width:'24px', height:'24px', borderRadius:'7px', display:'flex', alignItems:'center', justifyContent:'center', background: isC ? 'var(--emerald)' : 'var(--surface2)', color: isC ? '#fff' : 'var(--text2)', fontWeight:700, fontSize:'12px' },
+      };
+    });
+    const canSave = f.q.trim() && [f.a,f.b,f.c,f.d].every(o => o.trim());
+    let modalChapterName = '';
+    if (cur) { const mc = cur.chapters.find(c => c.id === S.modalChapterId); modalChapterName = mc ? mc.name : ''; }
+
+    // ---- home view data
+    const todayCards = 3, goalCards = 20, todayRemaining = 15;
+    const todayPct = Math.round(todayCards / goalCards * 100);
+    const todayDate = new Date().toLocaleDateString('en-US', {weekday:'long', month:'long', day:'numeric'});
+    const todayBarStyle = { height:'100%', width:todayPct+'%', borderRadius:'999px', background:'linear-gradient(90deg,var(--amber),#fb923c)', transition:'width .8s cubic-bezier(.2,.7,.2,1)' };
+    const weekDayNames = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+    const weekCounts = [4, 12, 8, 0, 15, 3, 0];
+    const todayDayIdx = (new Date().getDay() + 6) % 7;
+    const maxWeekCount = Math.max.apply(null, weekCounts.concat([1]));
+    const weekTotal = weekCounts.reduce((a,b) => a+b, 0);
+    const weekDays = weekDayNames.map((d, i) => {
+      const count = weekCounts[i], isToday = i === todayDayIdx;
+      return {
+        day:d, count, isToday,
+        colStyle:{ width:'100%', height:(count===0?8:Math.max(10,Math.round(count/maxWeekCount*74)))+'px', borderRadius:'6px 6px 2px 2px', background:count===0?'var(--surface3)':isToday?'var(--amber)':'var(--primary)', transition:'height .4s cubic-bezier(.2,.7,.2,1)' },
+        labelStyle:{ fontSize:'11px', fontWeight:isToday?700:600, color:isToday?'var(--primary-strong)':'var(--text3)' }
+      };
+    });
+    const allChapsHome = [];
+    S.subjects.forEach(s => { s.chapters.forEach(c => { const mc=c.cards.filter(cd=>cd.mastered).length; allChapsHome.push({s,c,mc,total:c.cards.length,pct:c.cards.length?Math.round(mc/c.cards.length*100):0}); }); });
+    const recentChaps = allChapsHome.filter(x=>x.total>0).sort((a,b)=>b.mc-a.mc).slice(0,3).map(x=>({
+      subjectName:x.s.name, subjectIconEl:this.ic(x.s.icon,13), chapterName:x.c.name,
+      cardCount:x.total, masteredCount:x.mc, pct:x.pct,
+      barStyle:{height:'100%',width:x.pct+'%',borderRadius:'999px',background:x.pct===100?'var(--emerald)':'linear-gradient(90deg,var(--primary),var(--primary-strong))',transition:'width .4s'},
+      pctBadge:{display:'inline-flex',alignItems:'center',padding:'2px 8px',borderRadius:'999px',fontSize:'11px',fontWeight:700,background:x.pct===100?'var(--emerald-soft)':'var(--surface2)',color:x.pct===100?'var(--emerald)':'var(--text2)'},
+      subjectBadge:{display:'inline-flex',alignItems:'center',gap:'5px',padding:'3px 9px',borderRadius:'999px',background:x.s.color+'22',color:x.s.color,fontSize:'11.5px',fontWeight:700},
+      onResume:()=>this.setState({selectedSubjectId:x.s.id},()=>this.studyChapter(x.c.id)),
+    }));
+    const reviewCount = S.subjects.reduce((n,s)=>n+s.chapters.reduce((m,c)=>m+c.cards.filter(cd=>!cd.mastered).length,0),0);
+    const onStartReview = () => { const first=allChapsHome.find(x=>x.total>0&&x.pct<100); if(first)this.setState({selectedSubjectId:first.s.id},()=>this.studyChapter(first.c.id)); };
+    const onQuickImport = () => {};
+    const onExplore = () => {};
+
+    const ghostHover = { background:'var(--surface2)' };
+
+    return {
+      themeVars, dark, light: !dark, collapsed, showLabels,
+      // icons
+      iconLogo: this.ic('sparkles',18), iconCollapse:this.ic('collapse',18), iconExpand:this.ic('expand',18),
+      iconSearch:this.ic('search',16), iconPlus:this.ic('plus',18), iconPencil:this.ic('pencil',14), iconTrash:this.ic('trash',15),
+      iconChevR:this.ic('chevR',15), iconFlame:this.ic('flame',15), iconSparkle:this.ic('sparkles',14),
+      iconSun:this.ic('sun',18), iconMoon:this.ic('moon',18), iconLayers:this.ic('layers',14), iconLayersLg:this.ic('layers',28),
+      iconRotate:this.ic('rotate',16), iconArrowL:this.ic('arrowL',16), iconArrowR:this.ic('arrowR',16),
+      iconCheck:this.ic('check',16), iconCheckSm:this.ic('check',14), iconClose:this.ic('x',18), iconPlay:this.ic('play',13), iconTrophyLg:this.ic('trophy',40),
+      // sidebar
+      subjects, sidebarStyle, search:S.search, onSearch:(e)=>this.setState({search:e.target.value}),
+      onToggleCollapse:()=>this.toggleCollapse(), onCreateSubject:()=>this.createSubject(),
+      ghostHover, searchFocus:{ borderColor:'var(--primary)' }, deleteHover:{ background:'var(--crimson-soft)' },
+      createBtnStyle:{ display:'flex', alignItems:'center', justifyContent:'center', gap:'9px', width:'100%', padding: collapsed ? '11px 0' : '11px 14px', borderRadius:'12px', border:'none', background:'linear-gradient(135deg,var(--primary),var(--primary-strong))', color:'#fff', fontSize:'14px', fontWeight:700, cursor:'pointer', boxShadow:'0 8px 20px var(--primary-soft)', transition:'transform .15s, box-shadow .2s' },
+      createBtnHover:{ transform:'translateY(-1px)', boxShadow:'0 12px 26px var(--primary-soft)' },
+      // header
+      crumbs, onToggleTheme:()=>this.toggleTheme(), mainRef:this.mainRef,
+      // views
+      isDashboard, isStudy, isHome,
+      // home
+      todayCards, goalCards, todayRemaining, todayDate, todayBarStyle,
+      weekDays, weekTotal, recentChaps, reviewCount, onStartReview, onQuickImport, onExplore,
+      iconZap:this.ic('zap',15), iconZapLg:this.ic('zap',26), iconCompass:this.ic('compass',18), iconUpload:this.ic('upload',18), iconHome:this.ic('home',17),
+      onGoHome:()=>this.goHome(), goDashboard:()=>this.goDashboard(),
+      homeNavStyle:{display:'flex',alignItems:'center',gap:'11px',padding:collapsed?'8px':'8px 10px',borderRadius:'11px',cursor:'pointer',background:isHome?'var(--primary-soft)':'transparent',color:'var(--text)',transition:'background .15s',justifyContent:collapsed?'center':'flex-start',boxShadow:isHome?'inset 3px 0 0 var(--primary)':'none'},
+      homeNavHover:isHome?{}:{background:'var(--surface2)'},
+      resumeBtnStyle:{display:'flex',alignItems:'center',justifyContent:'center',gap:'7px',padding:'9px 13px',border:'none',borderRadius:'10px',background:'var(--primary-soft)',color:'var(--primary-strong)',fontSize:'13.5px',fontWeight:700,cursor:'pointer',transition:'all .15s',width:'100%'},
+      resumeBtnHover:{background:'var(--primary)',color:'#fff'},
+      reviewBtnStyle:{flex:'none',display:'flex',alignItems:'center',gap:'9px',padding:'13px 20px',borderRadius:'12px',border:'1px solid rgba(99,102,241,.4)',background:'rgba(99,102,241,.22)',color:'#c7d2fe',fontSize:'14px',fontWeight:700,cursor:'pointer',transition:'all .2s',whiteSpace:'nowrap'},
+      reviewBtnHover:{background:'rgba(99,102,241,.4)',transform:'translateY(-1px)'},
+      qaBtnStyle:{display:'flex',alignItems:'center',gap:'13px',padding:'14px 16px',borderRadius:'14px',border:'1px solid var(--border)',background:'var(--surface)',cursor:'pointer',transition:'all .18s',boxShadow:'var(--shadow)',width:'100%'},
+      qaBtnHover:{transform:'translateY(-2px)',boxShadow:'0 10px 28px rgba(30,40,80,.1)'},
+      qaIconWrap:{flex:'none',width:'42px',height:'42px',borderRadius:'12px',display:'flex',alignItems:'center',justifyContent:'center',background:'var(--primary-soft)',color:'var(--primary-strong)'},
+      qaIconWrapGreen:{flex:'none',width:'42px',height:'42px',borderRadius:'12px',display:'flex',alignItems:'center',justifyContent:'center',background:'var(--emerald-soft)',color:'var(--emerald)'},
+      // dashboard
+      subjectName: cur ? cur.name : '', subjectMeta: cur ? (cur.chapters.length + ' chapters · ' + totalCards + ' cards · ' + overallPct + '% mastered') : '',
+      heroChipStyle:{ flex:'none', width:'62px', height:'62px', borderRadius:'18px', display:'flex', alignItems:'center', justifyContent:'center', background: cur ? cur.color + '22' : 'var(--surface2)', color: cur ? cur.color : 'var(--text2)' },
+      heroIconEl: cur ? this.ic(cur.icon, 28) : null,
+      overallPct, overallBarStyle:{ height:'100%', width: overallPct + '%', borderRadius:'999px', background:'linear-gradient(90deg,var(--primary),var(--primary-strong))', transition:'width .6s cubic-bezier(.2,.7,.2,1)' },
+      chapters, onAddChapter:()=>this.addChapter(),
+      chapterHover:{ transform:'translateY(-3px)', boxShadow:'0 14px 34px rgba(30,40,80,.12)' },
+      dashedHover:{ borderColor:'var(--primary)', color:'var(--primary)' },
+      titleFocus:{ borderColor:'var(--border-s)', background:'var(--surface2)' },
+      studyBtnStyle:{ flex:1, display:'flex', alignItems:'center', justifyContent:'center', gap:'7px', padding:'9px 13px', borderRadius:'10px', border:'none', background:'var(--primary-soft)', color:'var(--primary-strong)', fontSize:'13.5px', fontWeight:700, cursor:'pointer', transition:'all .15s' },
+      studyBtnHover:{ background:'var(--primary)', color:'#fff' },
+      // study
+      hasCards, isEmptyChapter, studyComplete:S.studyComplete,
+      cardNum, cardTotal, scoreLabel, studyBarStyle,
+      cardQuestion, hasCode, cardCode, cardExplanation, correctLetter, correctText, options,
+      flipStyle, frontStyle, backStyle, cardRef:this.cardRef,
+      onPrev:()=>this.prev(), onNext:()=>this.next(), onSkip:()=>this.next(), onFlip:()=>this.flip(),
+      onRestart:()=>this.restart(), onBackToChapters:()=>this.goDashboard(),
+      finalScore: correctCount,
+      flipLabel: S.flipped ? 'Show question' : 'Explanation',
+      nextLabel: isLast ? 'Finish' : 'Next', nextIconEl: isLast ? this.ic('check',16) : this.ic('arrowR',16),
+      prevStyle:{ display:'flex', alignItems:'center', gap:'8px', padding:'12px 18px', borderRadius:'12px', border:'1px solid var(--border-s)', background:'var(--surface)', color: prevDisabled ? 'var(--text3)' : 'var(--text)', fontSize:'14px', fontWeight:600, cursor: prevDisabled ? 'default' : 'pointer', opacity: prevDisabled ? 0.5 : 1, transition:'all .15s' },
+      navHover: prevDisabled ? {} : { background:'var(--surface2)' },
+      nextStyle: btnPrimary, nextHover:{ transform:'translateY(-1px)', boxShadow:'0 12px 26px var(--primary-soft)' },
+      onAddCardHere:()=>this.openCard(chap ? chap.id : null),
+      // modal
+      modalOpen:S.modalOpen, modalChapterName, form:S.form,
+      onQ:(e)=>this.setForm('q',e.target.value), onExp:(e)=>this.setForm('explanation',e.target.value), onCode:(e)=>this.setForm('code',e.target.value),
+      formOptions, previewOptions, previewQuestion: f.q || 'Your question will appear here…', previewHasCode: !!f.code.trim(),
+      onCloseModal:()=>this.closeModal(), onSaveCard:()=>this.saveCard(), stopProp:(e)=>e.stopPropagation(),
+      inputFocus:{ borderColor:'var(--primary)' },
+      saveBtnStyle: Object.assign({}, btnPrimary, { opacity: canSave ? 1 : 0.5, cursor: canSave ? 'pointer' : 'default', boxShadow: canSave ? btnPrimary.boxShadow : 'none' }),
+      saveBtnHover: canSave ? { transform:'translateY(-1px)', boxShadow:'0 12px 26px var(--primary-soft)' } : {},
+    };
+  }
+}
+</script>
+</body>
+</html>

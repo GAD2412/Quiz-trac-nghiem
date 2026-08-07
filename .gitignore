@@ -1,0 +1,8 @@
+target/
+apache-maven-3.9.6/
+build.log
+.idea/
+.DS_Store
+*.class
+.codex/
+.claude/
