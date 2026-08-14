@@ -969,7 +969,7 @@ async function init(){
     updateBreadcrumb();
     renderHome();
   } catch(e){
-    document.getElementById('content').innerHTML = '<div class="loading">Không kết nối được API. Hãy chắc chắn backend đang chạy tại localhost:8080.</div>';
+    document.getElementById('content').innerHTML = '<div class="loading">Không kết nối được API. Hãy chắc chắn backend đang chạy tại port 8081.</div>';
   }
 }
 
