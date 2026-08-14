@@ -28,7 +28,7 @@ body.dark .text2{color:#8b95b8!important;}
 body.dark .text3{color:#5a648a!important;}
 
 /* Layout */
-#app{display:flex;width:100%;min-height:100vh;}
+#app{display:flex;width:100%;min-height:100vh;min-width:0;}
 aside{width:260px;flex:none;display:flex;flex-direction:column;background:#fff;border-right:1px solid #e9ebf2;height:100vh;position:sticky;top:0;}
 aside.collapsed{width:68px;}
 main{flex:1;min-width:0;display:flex;flex-direction:column;}
@@ -212,6 +212,77 @@ mark.hl-pink{background:#f9a8d4;color:inherit;border-radius:3px;padding:0 1px;}
 .note-item-del{flex:none;width:18px;height:18px;border-radius:5px;border:none;background:transparent;color:#c0c5d0;cursor:pointer;font-size:14px;line-height:1;display:flex;align-items:center;justify-content:center;padding:0;}
 .note-item-del:hover{background:#fee2e2;color:#f43f5e;}
 .notes-empty{text-align:center;padding:20px 0;font-size:13px;color:#c0c5d0;font-weight:500;}
+
+/* Mobile menu button (hidden on desktop) */
+.mobile-menu-btn{display:none;}
+.sidebar-backdrop{display:none;}
+
+/* ============================================================
+   Responsive: tablet & mobile
+   ============================================================ */
+@media (max-width:900px){
+  .study-layout{flex-direction:column;}
+  .notes-panel{width:100%;position:static;}
+}
+
+@media (max-width:768px){
+  html,body{overflow-x:hidden;}
+  #app{position:relative;}
+
+  /* Sidebar becomes an off-canvas drawer */
+  aside{position:fixed;left:0;top:0;bottom:0;width:78vw;max-width:300px;z-index:200;transform:translateX(-100%);transition:transform .22s ease;box-shadow:0 0 0 rgba(0,0,0,0);}
+  aside.mobile-open{transform:translateX(0);box-shadow:0 0 40px rgba(0,0,0,.25);}
+  aside.collapsed{width:78vw;max-width:300px;}
+  .sidebar-backdrop{display:none;position:fixed;inset:0;background:rgba(15,19,32,.45);z-index:190;}
+  .sidebar-backdrop.visible{display:block;}
+  .collapse-btn{display:none;}
+
+  main{width:100%;}
+  header{padding:0 12px;gap:8px;height:56px;}
+  .mobile-menu-btn{display:flex;flex:none;width:36px;height:36px;border-radius:9px;border:1px solid #e9ebf2;background:#fff;color:#5b6178;align-items:center;justify-content:center;cursor:pointer;}
+  .breadcrumb{gap:3px;overflow-x:auto;white-space:nowrap;-ms-overflow-style:none;scrollbar-width:none;}
+  .breadcrumb::-webkit-scrollbar{display:none;}
+  .crumb-btn{font-size:13px;padding:4px 5px;flex:none;}
+  .streak-badge{padding:5px 9px;font-size:12px;}
+  .theme-btn{width:34px;height:34px;}
+  .avatar{width:32px;height:32px;font-size:12px;}
+
+  .page{padding:16px 14px 56px;}
+  .welcome-banner{flex-direction:column;padding:18px 18px 20px;border-radius:16px;gap:14px;}
+  .welcome-banner > *{min-width:0;width:100%;}
+  .welcome-text h1{font-size:20px;}
+  .welcome-text p{font-size:13px;}
+  .today-goal-card{width:100%;min-width:0;}
+
+  .section-title{font-size:15.5px;}
+  .chapter-grid,.topics-grid{grid-template-columns:1fr;gap:12px;}
+  .chapter-card,.topic-card{padding:15px;}
+
+  .subject-hero{gap:12px;margin-bottom:18px;}
+  .hero-chip{width:44px;height:44px;border-radius:12px;}
+  .subject-hero h1{font-size:21px;}
+  .mastery-card{padding:15px 16px;}
+
+  /* Study mode */
+  .study-layout{padding:14px 12px 56px;gap:14px;}
+  .study-page.with-layout{padding:0;}
+  .card-shell{padding:18px 16px;border-radius:16px;}
+  .card-question{font-size:17.5px;}
+  .study-header span{font-size:13px;}
+  .option-btn{padding:11px 13px;font-size:14px;}
+  .option-btn .letter{width:26px;height:26px;font-size:12px;}
+  .study-nav{flex-wrap:wrap;}
+  .nav-btn,.next-btn{padding:10px 14px;font-size:13.5px;}
+  .next-btn{margin-left:0;flex:1;justify-content:center;}
+  .study-nav > div:first-child:empty{display:none;}
+
+  .complete-screen{padding:40px 16px;}
+  .complete-actions{width:100%;flex-direction:column;}
+  .complete-actions button{width:100%;justify-content:center;}
+
+  /* Notes panel sits full-width below the card on mobile */
+  .notes-panel{position:static;}
+}
 </style>
 </head>
 <body>
@@ -223,6 +294,7 @@ mark.hl-pink{background:#f9a8d4;color:inherit;border-radius:3px;padding:0 1px;}
   <button class="hl-btn clear" onclick="clearHighlight()">Xóa</button>
 </div>
 <div id="app">
+  <div class="sidebar-backdrop" id="sidebar-backdrop" onclick="closeMobileSidebar()"></div>
   <aside id="sidebar">
     <div class="sidebar-logo">
       <div class="logo-icon">
@@ -261,6 +333,9 @@ mark.hl-pink{background:#f9a8d4;color:inherit;border-radius:3px;padding:0 1px;}
 
   <main>
     <header>
+      <button class="mobile-menu-btn" onclick="openMobileSidebar()" title="Mở menu">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
       <div class="breadcrumb" id="breadcrumb">
         <button class="crumb-btn active">Trang chủ</button>
       </div>
@@ -324,6 +399,16 @@ function toggleTheme(){
   } else {
     icon.innerHTML = '<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z"/>';
   }
+}
+
+// ── Mobile sidebar drawer ─────────────────────────────────────────────────
+function openMobileSidebar(){
+  document.getElementById('sidebar').classList.add('mobile-open');
+  document.getElementById('sidebar-backdrop').classList.add('visible');
+}
+function closeMobileSidebar(){
+  document.getElementById('sidebar').classList.remove('mobile-open');
+  document.getElementById('sidebar-backdrop').classList.remove('visible');
 }
 
 // ── Sidebar collapse ───────────────────────────────────────────────────────
@@ -531,6 +616,7 @@ async function startStudy(subjectId, topicId, topicName){
   state.shuffled = true;
   renderSidebar();
   updateBreadcrumb();
+  closeMobileSidebar();
   document.getElementById('content').innerHTML = '<div class="loading">Đang tải câu hỏi...</div>';
   try {
     const data = await fetchTopicCards(topicId);
@@ -728,6 +814,7 @@ function goHome(){
   renderSidebar();
   updateBreadcrumb();
   renderHome();
+  closeMobileSidebar();
 }
 
 function selectSubject(id){
@@ -736,6 +823,7 @@ function selectSubject(id){
   renderSidebar();
   updateBreadcrumb();
   renderDashboard();
+  closeMobileSidebar();
 }
 
 function stripOptionPrefix(str){
