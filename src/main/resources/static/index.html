@@ -354,8 +354,6 @@ mark.hl-pink{background:#f9a8d4;color:inherit;border-radius:3px;padding:0 1px;}
 </div>
 
 <script>
-const API = '';
-const USER_ID = 1;
 let state = {
   subjects: [],
   view: 'home',
@@ -430,11 +428,12 @@ function filterSubjects(q){
 
 // ── API calls ──────────────────────────────────────────────────────────────
 async function fetchSubjects(){
-  const r = await fetch(`${API}/api/subjects?userId=${USER_ID}`);
+  // Dữ liệu tĩnh sinh bởi scripts/export_static.py (không cần backend)
+  const r = await fetch('data/subjects.json');
   return r.json();
 }
 async function fetchTopicCards(topicId){
-  const r = await fetch(`${API}/api/topics/${topicId}/cards`);
+  const r = await fetch(`data/topics/${topicId}.json`);
   return r.json();
 }
 
@@ -1075,7 +1074,7 @@ async function init(){
     updateBreadcrumb();
     renderHome();
   } catch(e){
-    document.getElementById('content').innerHTML = '<div class="loading">Không kết nối được API. Hãy chắc chắn backend đang chạy tại port 8081.</div>';
+    document.getElementById('content').innerHTML = '<div class="loading">Không tải được dữ liệu. Hãy tải lại trang.</div>';
   }
 }
 
