@@ -1,13 +1,11 @@
 -- FILE SQL HOÀN CHỈNH CHO 200 CÂU HỎI TRẮC NGHIỆM IOT (Phân chia 4 chương chuẩn)
--- Subject: IoT (id=2). Topics: id=10, 11, 12, 13.
-INSERT INTO subjects (id, user_id, name, icon, color) VALUES (2, 1, 'IoT', 'Cpu', '#10b981') ON CONFLICT (id) DO NOTHING;
+-- Subject: IoT (id=2, đã tạo trong iot_115_cau.sql). Topics: id=10, 11, 12, 13.
 
 INSERT INTO topics (id, subject_id, name) VALUES 
 (10, 2, 'Chương 1 - Tổng quan & Khái niệm cơ bản về IoT'),
 (11, 2, 'Chương 2 - Cảm biến, Cơ cấu chấp hành & Xử lý tín hiệu'),
 (12, 2, 'Chương 3 - Giao thức truyền thông & Mạng IoT'),
-(13, 2, 'Chương 4 - Lập trình nhúng Arduino & Ứng dụng thực tế')
-ON CONFLICT (id) DO NOTHING;
+(13, 2, 'Chương 4 - Lập trình nhúng Arduino & Ứng dụng thực tế');
 
 
 -- [Nguồn: Trắc nghiệm IoT, câu gốc số 1] -> id hệ thống 874

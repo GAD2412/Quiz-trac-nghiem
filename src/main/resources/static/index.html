@@ -581,7 +581,12 @@ function renderDashboard(){
         <div class="progress-bar-fill" style="width:${overallPct}%;background:${s.color};"></div>
       </div>
     </div>
-    <div class="section-header"><h2 class="section-title">Chủ đề</h2></div>
+    <div class="section-header">
+      <h2 class="section-title">Chủ đề</h2>
+      <label style="display:flex;align-items:center;gap:7px;font-size:13px;font-weight:600;color:#5b6178;cursor:pointer;">
+        <input type="checkbox" ${shuffleOn(s.id)?'checked':''} onchange="toggleShuffle(${s.id})"> Xáo trộn câu hỏi &amp; đáp án
+      </label>
+    </div>
     <div class="topics-grid">${topicsHtml||'<div style="color:#959bb0;">Chưa có chủ đề.</div>'}</div>
   </div>`;
 }
@@ -596,11 +601,24 @@ function shuffleArray(arr){
   return a;
 }
 
-function applyShuffleToCards(cards){
-  return shuffleArray(cards).map(card => {
-    const opts = shuffleArray(card.options || []);
-    return {...card, options: opts};
-  });
+// Xáo trộn bật/tắt theo từng môn; mặc định tắt (giữ nguyên thứ tự gốc)
+function shuffleOn(subjectId){ try{ return localStorage.getItem(`qf_shuffle_${subjectId}`)==='1'; }catch(e){ return false; } }
+function toggleShuffle(subjectId){
+  try{
+    if(shuffleOn(subjectId)) localStorage.removeItem(`qf_shuffle_${subjectId}`);
+    else localStorage.setItem(`qf_shuffle_${subjectId}`,'1');
+  }catch(e){}
+  renderDashboard();
+}
+
+function orderCards(cards){
+  if(shuffleOn(state.selectedSubjectId)){
+    return shuffleArray(cards).map(card => ({...card, options: shuffleArray(card.options || [])}));
+  }
+  return [...cards].sort((a,b)=>a.id-b.id).map(card => ({
+    ...card,
+    options: [...(card.options || [])].sort((a,b)=>(a.displayOrder-b.displayOrder)||(a.id-b.id))
+  }));
 }
 
 async function startStudy(subjectId, topicId, topicName){
@@ -621,7 +639,7 @@ async function startStudy(subjectId, topicId, topicName){
   try {
     const data = await fetchTopicCards(topicId);
     state.rawCards = data.quizCards || data || [];
-    state.cards = applyShuffleToCards(state.rawCards);
+    state.cards = orderCards(state.rawCards);
     renderStudy();
   } catch(e){
     document.getElementById('content').innerHTML = '<div class="loading">Lỗi tải dữ liệu.</div>';
@@ -663,7 +681,7 @@ function renderStudy(){
   const cleanQuestion = (card.question || '').replace(/^Câu\s+\d+:\s*/i, '');
   const total = state.cards.length;
   const pct = Math.round(state.cardIndex/total*100);
-  const letters = ['A','B','C','D','E'];
+  const letters = ['A','B','C','D','E','F'];
   const correctOpt = (card.options||[]).find(o=>o.correct);
   const correctLetter = letters[(card.options||[]).indexOf(correctOpt)] || 'A';
 
@@ -802,7 +820,7 @@ function restartStudy(){
   state.answered = false;
   state.score = 0;
   state.shuffled = true;
-  state.cards = applyShuffleToCards(state.rawCards);
+  state.cards = orderCards(state.rawCards);
   saveStudySession();
   renderStudy();
 }
@@ -827,7 +845,7 @@ function selectSubject(id){
 }
 
 function stripOptionPrefix(str){
-  return String(str||'').replace(/^[A-Da-d1-4][.)]\s*/,'');
+  return String(str||'').replace(/^[A-Fa-f1-4][.)]\s*/,'');
 }
 
 // ── Highlight ──────────────────────────────────────────────────────────────
